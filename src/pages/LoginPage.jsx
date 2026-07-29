@@ -9,7 +9,7 @@ export default function LoginPage({ onLoginSuccess }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (username.trim().toLowerCase() === 'lithintransports' && password === 'Lithintransports@984') {
+    if (username.trim().toLowerCase() === 'lithintransport' && password === 'Lithintransport@884') {
       setError('');
       onLoginSuccess();
     } else {

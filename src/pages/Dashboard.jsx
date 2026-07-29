@@ -5,7 +5,7 @@ import Quotation from './Quotation';
 import { db } from '../firebase';
 import { collection, doc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 
-const SVATLogo = () => (
+const LTLogo = () => (
   <div style={{
     display: 'flex',
     flexDirection: 'column',
@@ -19,7 +19,7 @@ const SVATLogo = () => (
   }}>
     <img
       src="/logo.png"
-      alt="SVAT Logo"
+      alt="LT Logo"
       style={{
         width: '100px',
         height: '100px',
@@ -243,7 +243,7 @@ const DEFAULT_INVOICE = {
   companyGst: '33FFSPP0139H1Z8',
   companyState: 'Tamil Nadu, Code: 33',
   companyEmail: 'lithintransports@gmail.com',
-  companyWebsite: 'www.lithintransport.com',
+  companyWebsite: 'www.lithintransport.in',
   rcmStatus: 'Exempted',
   debitNoteNo: '',
   date: '',
@@ -326,17 +326,17 @@ export default function Dashboard({ onLogout }) {
   }, [activeTab]);
 
   const [invoices, setInvoices] = useState(() => {
-    const saved = localStorage.getItem('svat_saved_invoices');
+    const saved = localStorage.getItem('lt_saved_invoices') || localStorage.getItem('svat_saved_invoices');
     return saved ? JSON.parse(saved) : [
       {
-        id: 'SVAT/DN/26-27/13',
+        id: 'LT/DN/26-27/13',
         consignee: 'NEW SABARI SASTHA SHIPPING SERVICES',
         date: '30-April-26',
         amount: 62000,
         status: 'paid'
       },
       {
-        id: 'SVAT/DN/26-27/12',
+        id: 'LT/DN/26-27/12',
         consignee: 'NEW SABARI SASTHA SHIPPING SERVICES',
         date: '15-April-26',
         amount: 45000,
@@ -919,7 +919,7 @@ export default function Dashboard({ onLogout }) {
           }}>
             <img
               src="/logo.png"
-              alt="SVAT Logo"
+              alt="LT Logo"
               style={{
                 width: '100%',
                 height: '100%',
@@ -927,11 +927,11 @@ export default function Dashboard({ onLogout }) {
               }}
             />
           </div>
-          <span className="logo-text">SVAT</span>
+          <span className="logo-text">LT</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Rajesh</span>
-          <div className="user-avatar-mobile">M</div>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Arul</span>
+          <div className="user-avatar-mobile">A</div>
         </div>
       </div>
 
@@ -954,7 +954,7 @@ export default function Dashboard({ onLogout }) {
             }}>
               <img
                 src="/logo.png"
-                alt="SVAT Logo"
+                alt="LT Logo"
                 style={{
                   width: '100%',
                   height: '100%',
@@ -1039,9 +1039,9 @@ export default function Dashboard({ onLogout }) {
 
         <div className="sidebar-user">
           <div className="user-info">
-            <div className="user-avatar">M</div>
+            <div className="user-avatar">A</div>
             <div className="user-details">
-              <p className="user-name">Rajesh</p>
+              <p className="user-name">Arul</p>
               <p className="user-role">Billing Manager</p>
             </div>
           </div>
@@ -1787,7 +1787,7 @@ export default function Dashboard({ onLogout }) {
                           borderBottom: '1.5px solid #000000'
                         }}>
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                            <SVATLogo />
+                            <LTLogo />
                           </div>
                           <div style={{ paddingLeft: '10px', textAlign: 'left' }}>
                             <div style={{ fontSize: '1.18rem', fontWeight: '800', color: '#0F6236', lineHeight: 1.1 }}>

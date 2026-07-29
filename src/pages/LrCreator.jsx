@@ -274,9 +274,9 @@ const DEFAULT_LR = {
   companyUdyam: 'TN-28-0204870',
   companyIso: 'QTN202604894',
   companyPhone1: '9566738884',
-  companyPhone2: '95667 38884',
+  companyPhone2: '9342317996',
   companyEmail: 'lithintransports@gmail.com',
-  companyWebsite: 'www.lithintransport.com'
+  companyWebsite: 'www.lithintransport.in'
 };
 
 const DOTTED_LINE_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc0JyBoZWlnaHQ9JzIwJz48cmVjdCB4PScwJyB5PScxOScgd2lkdGg9JzInIGhlaWdodD0nMScgZmlsbD0nIzA4MTAzQScvPjwvc3ZnPg==';
@@ -297,7 +297,7 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
   };
 
   const [signatureImage, setSignatureImage] = useState(() => {
-    return localStorage.getItem('svat_signature_image') || '';
+    return localStorage.getItem('lt_signature_image') || localStorage.getItem('svat_signature_image') || '';
   });
 
   const handleSignatureUpload = (e) => {
@@ -1612,7 +1612,7 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                             {/* Main Title Box */}
                             <div style={{ width: '56%', padding: '2px 0', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                               <div style={{ paddingLeft: '20px', margin: '0 0 2px 0', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                                <img src="/Title.png" alt="SREE VAARAHI AMMAN TRANSPORTS" style={{ height: '45px', width: '500px', maxWidth: '100%', objectFit: 'contain' }} />
+                                <img src="/Title.png" alt="LITHIN TRANSPORT" style={{ height: '45px', width: '500px', maxWidth: '100%', objectFit: 'contain' }} />
                               </div>
                               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px', width: '100%', paddingLeft: '20px' }}>
                                 <div style={{ fontSize: '0.65rem', fontWeight: 'bold', textAlign: 'center', lineHeight: '1.2' }}>
@@ -1655,14 +1655,14 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                                 Mail: {formData.companyEmail}
                               </a>
                               <a
-                                href={formData.companyWebsite ? (formData.companyWebsite.startsWith('http') ? formData.companyWebsite : `https://${formData.companyWebsite}`) : 'https://www.sreevaarahiammantransports.com'}
+                                href={formData.companyWebsite ? (formData.companyWebsite.startsWith('http') ? formData.companyWebsite : `https://${formData.companyWebsite}`) : 'https://www.lithintransport.in'}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 style={{ fontSize: '0.52rem', fontWeight: '900', marginTop: '4px', textDecoration: 'none', cursor: 'pointer' }}
                                 onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
                                 onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
                               >
-                                Web: {formData.companyWebsite || 'www.sreevaarahiammantransports.com'}
+                                Web: {formData.companyWebsite || 'www.lithintransport.in'}
                               </a>
                             </div>
 
@@ -1980,7 +1980,7 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                                           <td style={{ width: '35%', padding: '6px', verticalAlign: 'top', fontSize: '0.65rem' }}>
                                             <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100px', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
                                               <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                                                <img src="/Title.png" alt="SREE VAARAHI AMMAN TRANSPORTS" style={{ height: '18px', width: 'auto', objectFit: 'contain' }} />
+                                                <img src="/Title.png" alt="LITHIN TRANSPORT" style={{ height: '18px', width: 'auto', objectFit: 'contain' }} />
                                               </div>
                                               {signatureImage && (
                                                 <img
@@ -2016,19 +2016,18 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                                         <span>
                                           CONTACT : <a
                                             href={getTelUrl('9566738884')}
-                                            style={{
-                                              color: '#08103A',
-                                              textDecoration: 'none',
-                                              cursor: 'pointer'
-                                            }}
+                                            style={{ color: '#08103A', textDecoration: 'none', cursor: 'pointer' }}
                                             onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
                                             onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
-                                          >
-                                            9566738884
-                                          </a>
+                                          >9566738884</a>, <a
+                                            href={getTelUrl('9342317996')}
+                                            style={{ color: '#08103A', textDecoration: 'none', cursor: 'pointer' }}
+                                            onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                                            onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+                                          >9342317996</a>
                                         </span>
                                         <a
-                                          href={formData.companyWebsite ? (formData.companyWebsite.startsWith('http') ? formData.companyWebsite : `https://${formData.companyWebsite}`) : 'https://www.sreevaarahiammantransports.com'}
+                                          href={formData.companyWebsite ? (formData.companyWebsite.startsWith('http') ? formData.companyWebsite : `https://${formData.companyWebsite}`) : 'https://www.lithintransport.in'}
                                           target="_blank"
                                           rel="noopener noreferrer"
                                           style={{
@@ -2039,7 +2038,7 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                                             cursor: 'pointer'
                                           }}
                                         >
-                                          {formData.companyWebsite || 'www.sreevaarahiammantransports.com'}
+                                          {formData.companyWebsite || 'www.lithintransport.in'}
                                         </a>
                                       </div>
                                     </div>
