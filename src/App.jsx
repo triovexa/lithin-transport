@@ -38,29 +38,29 @@ function App() {
 
   return (
     <>
-      {/* Ambient Animated Background Blobs */}
+      
       <div className="bg-blur-blobs">
         <div className="blob blob-1"></div>
         <div className="blob blob-2"></div>
         <div className="blob blob-3"></div>
       </div>
 
-      {/* Main Top Header Navbar (Hidden in printable/dashboard states to maximize screen room) */}
+     
       {page !== 'dashboard' && (
         <header className="navbar">
           <div className="logo-container" onClick={() => setPage('home')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
             <div style={{
-              width: '46px',
-              height: '46px',
+              width: '64px',
+              height: '64px',
               borderRadius: '50%',
               backgroundColor: '#FFFFFF',
-              border: '1.5px solid rgba(255, 255, 255, 0.8)',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+              border: '2px solid rgba(255, 255, 255, 0.9)',
+              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.1)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               overflow: 'hidden',
-              padding: '4px'
+              padding: '2px'
             }}>
               <img src="/logo.png" alt="SVAT Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
@@ -98,23 +98,23 @@ function App() {
       {page === 'login' && <LoginPage onLoginSuccess={handleLoginSuccess} />}
       {page === 'dashboard' && <Dashboard onLogout={handleLogout} />}
 
-      {/* Footer (Hidden in Dashboard View for application-style layout) */}
+    
       {page !== 'dashboard' && (
         <footer className="footer">
           <div>
             <div className="logo-container" style={{ display: 'flex', alignItems: 'center', marginBottom: '1.25rem' }}>
               <div style={{
-                width: '45px',
-                height: '45px',
+                width: '60px',
+                height: '60px',
                 borderRadius: '50%',
                 backgroundColor: '#FFFFFF',
-                border: '1.5px solid rgba(255, 255, 255, 0.8)',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.04)',
+                border: '2px solid rgba(255, 255, 255, 0.9)',
+                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.08)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 overflow: 'hidden',
-                padding: '3px'
+                padding: '2px'
               }}>
                 <img src="/logo.png" alt="SVAT Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
@@ -126,17 +126,17 @@ function App() {
           <div>
             <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-dark)', marginBottom: '1rem' }}>HQ Address</h4>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
-              228/1, Amman Nagar,<br />
-              Rakkiyapalayam, Avinashi,<br />
-              Tirupur - 641 654, Tamil Nadu.
+              4/252, Vedivattam,<br />
+              Agraharam vill and po,<br />
+              Natrampalli TK, Tirupattur DT. 635651
             </p>
           </div>
           <div>
             <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-dark)', marginBottom: '1rem' }}>Contact Info</h4>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.6', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <span><strong>Phone:</strong> +91 96552 37104, +91 9655235088</span>
-              <span><strong>Email:</strong> Vaarahitpt104@gmail.com</span>
-              <span><strong>Website:</strong> www.sreevaarahiammantransports.com</span>
+              <span><strong>Phone:</strong> +91 95667 38884</span>
+              <span><strong>Email:</strong> lithintransports@gmail.com</span>
+              <span><strong>Website:</strong> www.lithintransport.com</span>
             </p>
           </div>
         </footer>
