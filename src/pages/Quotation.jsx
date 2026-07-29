@@ -199,14 +199,14 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
       cities: ['Tirupur', 'Mumbai', 'Chennai', 'Bangalore', 'Tuticorin', 'Cochin', 'Pollachi', 'Hyderabad', 'Delhi'],
       consignees: [],
       addresses: [],
-      gsts: ['33RSPPS1745J1ZU'],
+      gsts: ['33FFSPP0139H1Z8'],
       states: ['Tamil Nadu, Code: 33'],
       vessels: [],
       otherRefs: ['LR COPY'],
       banks: ['INDIAN OVERSEAS BANK'],
-      accounts: ['340502000000765'],
-      branches: ['THIRUMURUGAN POONDI, TIRUPUR-641652 & IFSC: IOBA0003405'],
-      holders: ['SREE VAARAHI AMMAN TRANSPORTS'],
+      accounts: ['398402000000076'],
+      branches: ['NATARAMPALLI-635651 & IFSC: IOBA0003984'],
+      holders: ['M/S LITHIN TRANSPORT'],
       toAddresses: []
     };
   });
@@ -467,13 +467,13 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
               (REGULAR SERVICE TO: MUMBAI, CHENNAI, BANGALORE, TUTICORIN, COCHIN, PAN INDIA)
             </p>
             <p style={{ fontSize: '11px', margin: '0 0 4px 0' }}>
-              228/1, Rakkiyapalayam, Avinashi, Tirupur - 641 654.
+              4/252, Vedivattam, Agraharam vill and po, Natrampalli TK, Tirupattur DT. 635651
             </p>
             <p style={{ fontSize: '12px', fontWeight: 'bold', margin: '0 0 4px 0' }}>
-              Contact: +91-9655237104, +91-9655235088
+              Contact: +91 95667 38884
             </p>
             <p style={{ fontSize: '11px', margin: '0' }}>
-              Mail Id : <a href="mailto:vaarahitpt104@gmail.com" style={{ color: 'blue', textDecoration: 'underline' }}>Vaarahitpt104@gmail.com</a> , Website : <a href="http://www.sreevaarahiammantransports.com" style={{ color: 'black', textDecoration: 'none' }}>www.sreevaarahiammantransports.com</a>
+              Mail Id : <a href="mailto:lithintransports@gmail.com" style={{ color: 'blue', textDecoration: 'underline' }}>lithintransports@gmail.com</a> , Website : <a href="http://www.lithintransport.com" style={{ color: 'black', textDecoration: 'none' }}>www.lithintransport.com</a>
             </p>
           </div>
         </div>
@@ -784,10 +784,10 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
               <div>
                 <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 4px 0', textTransform: 'uppercase' }}>SREE VAARAHI AMMAN Transports</h1>
                 <h2 style={{ fontSize: '14px', fontWeight: 'bold', textDecoration: 'underline', margin: '0 0 8px 0' }}>EXPERT IN DOMESTIC CARGO MOVERS</h2>
-                <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>Address:</strong> 228/1, Rakkiyapalayam, Avinashi, Tirupur - 641 654.</p>
-                <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>Contact:</strong> +91-9655237104, +91-9655235088</p>
-                <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>www:</strong> www.sreevaarahiammantransports.com</p>
-                <p style={{ margin: '0', fontSize: '14px' }}><strong>mail:</strong> Vaarahitpt104@gmail.com</p>
+                <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>Address:</strong> 4/252, Vedivattam, Agraharam vill and po, Natrampalli TK, Tirupattur DT. 635651</p>
+                <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>Contact:</strong> +91 95667 38884</p>
+                <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>www:</strong> www.lithintransport.com</p>
+                <p style={{ margin: '0', fontSize: '14px' }}><strong>mail:</strong> lithintransports@gmail.com</p>
               </div>
             </div>
 

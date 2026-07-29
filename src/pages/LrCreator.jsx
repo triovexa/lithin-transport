@@ -3,13 +3,12 @@ import { Plus, Trash2, Printer, Save, Truck, Info } from 'lucide-react';
 import { db } from '../firebase';
 import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 
-// Suggestions Dropdown component with prefix-first sorting
 const SuggestionsDropdown = ({ query, list, onSelect, onClose }) => {
   const lowerQuery = (query || '').toString().toLowerCase().trim();
   const filtered = list.filter(val => {
     if (!val) return false;
     const valLower = val.toString().toLowerCase();
-    if (!lowerQuery) return true; // show all when query is empty
+    if (!lowerQuery) return true; 
     return valLower.includes(lowerQuery) && valLower !== lowerQuery;
   }).sort((a, b) => {
     if (!lowerQuery) return a.localeCompare(b);
@@ -59,7 +58,7 @@ const SuggestionsDropdown = ({ query, list, onSelect, onClose }) => {
       boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08)'
     }}>
       {visibleList.map((val, idx) => (
-        <li 
+        <li
           key={idx}
           style={{
             padding: '8px 12px',
@@ -241,7 +240,7 @@ const DEFAULT_LR = {
   from: '',
   to: '',
   truckNo: '',
-  paymentMode: 'TOPAY', // TOPAY, PAID, CREDIT
+  paymentMode: 'TOPAY', 
   consignorName: '',
   consignorAddress: '',
   consignorGst: '',
@@ -268,16 +267,16 @@ const DEFAULT_LR = {
     aoc: '',
     foc: '',
     others: '',
-    gstRate: '5' // 5%, 12%, 18%, 0%
+    gstRate: '5' 
   },
-  companyGstin: '33RSPPS1745J1ZU',
-  companyPan: 'RSPPS1745J',
+  companyGstin: '33FFSPP0139H1Z8',
+  companyPan: 'FFSPP0139H',
   companyUdyam: 'TN-28-0204870',
   companyIso: 'QTN202604894',
-  companyPhone1: '96552 37104',
-  companyPhone2: '96552 35088',
-  companyEmail: 'vaarahitpt104@gmail.com',
-  companyWebsite: 'www.sreevaarahiammantransports.com'
+  companyPhone1: '9566738884',
+  companyPhone2: '95667 38884',
+  companyEmail: 'lithintransports@gmail.com',
+  companyWebsite: 'www.lithintransport.com'
 };
 
 const DOTTED_LINE_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc0JyBoZWlnaHQ9JzIwJz48cmVjdCB4PScwJyB5PScxOScgd2lkdGg9JzInIGhlaWdodD0nMScgZmlsbD0nIzA4MTAzQScvPjwvc3ZnPg==';
@@ -348,7 +347,7 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
   }, [loadedLr]);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
-  
+
   const previewContainerRef = useRef(null);
   const [previewScale, setPreviewScale] = useState(1);
   const [cardHeight, setCardHeight] = useState(794);
@@ -358,14 +357,14 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
     const updateScale = () => {
       if (previewContainerRef.current) {
         // Calculate available width minus some padding
-        const availableWidth = previewContainerRef.current.clientWidth - 40; 
+        const availableWidth = previewContainerRef.current.clientWidth - 40;
         const newScale = availableWidth / 1123;
         setPreviewScale(newScale < 1 ? newScale : 1);
       }
     };
-    
+
     updateScale();
-    setTimeout(updateScale, 100); 
+    setTimeout(updateScale, 100);
     window.addEventListener('resize', updateScale);
     return () => window.removeEventListener('resize', updateScale);
   }, []);
@@ -415,14 +414,14 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
       cities: ['Tirupur', 'Mumbai', 'Chennai', 'Bangalore', 'Tuticorin', 'Cochin', 'Pollachi', 'Hyderabad', 'Delhi'],
       consignees: [],
       addresses: [],
-      gsts: ['33RSPPS1745J1ZU'],
+      gsts: ['33FFSPP0139H1Z8'],
       states: ['Tamil Nadu, Code: 33'],
       vessels: [],
       otherRefs: ['LR COPY'],
       banks: ['INDIAN OVERSEAS BANK'],
-      accounts: ['340502000000765'],
-      branches: ['THIRUMURUGAN POONDI, TIRUPUR-641652 & IFSC: IOBA0003405'],
-      holders: ['SREE VAARAHI AMMAN TRANSPORTS'],
+      accounts: ['398402000000076'],
+      branches: ['NATARAMPALLI-635651 & IFSC: IOBA0003984'],
+      holders: ['M/S LITHIN TRANSPORT'],
       toAddresses: []
     };
   });
@@ -455,7 +454,7 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
 
         const existingList = current[key] || [];
         const mergedList = [...existingList];
-        
+
         cleanUpdates.forEach(item => {
           if (!mergedList.includes(item)) {
             mergedList.push(item);
@@ -504,7 +503,7 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
       }
       return lr[fieldName];
     }).filter(val => val !== undefined && val !== null && val.toString().trim() !== '');
-    
+
     return Array.from(new Set(values.map(val => val.toString().trim())));
   };
 
@@ -658,7 +657,7 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
       localStorage.setItem('svat_goods_history', JSON.stringify(updatedHistory));
       historyChanged = true;
     }
-    
+
     // Save the receipt to a list of saved LRs (optional helper log)
     const newLrEntry = {
       ...formData,
@@ -681,7 +680,7 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
       gsts: [formData.consignorGst, formData.consigneeGst],
       vessels: [formData.truckNo]
     });
-    
+
     try {
       await setDoc(doc(db, 'lorry_receipts', newLrEntry.id), newLrEntry);
       if (triggerToast) {
@@ -742,27 +741,27 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
     if (!element) return;
 
     const filename = `LR_${(formData.lrNo || 'receipt').replace(/\//g, '_')}.pdf`;
-    
+
     const opt = {
-      margin:       0,
-      filename:     filename,
-      image:        { type: 'jpeg', quality: 1 },
-      html2canvas:  { scale: 3, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
-      jsPDF:        { unit: 'px', format: [1123, 794], orientation: 'landscape' },
-      pagebreak:    { mode: 'css' }
+      margin: 0,
+      filename: filename,
+      image: { type: 'jpeg', quality: 1 },
+      html2canvas: { scale: 3, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
+      jsPDF: { unit: 'px', format: [1123, 794], orientation: 'landscape' },
+      pagebreak: { mode: 'css' }
     };
-    
+
     const cards = element.querySelectorAll('.lr-preview-card');
     cards.forEach(card => {
       card.style.boxShadow = 'none';
       card.style.marginBottom = '0';
     });
-    
+
     const scaleWrapper = document.getElementById('lr-scale-wrapper');
     if (scaleWrapper) {
       scaleWrapper.style.transform = 'scale(1)';
     }
-    
+
     window.html2pdf().set(opt).from(element).save().then(() => {
       // Restore shadow and margins
       cards.forEach((card, idx) => {
@@ -797,7 +796,7 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
     let currentLines = 0;
     const MAX_LINES_PER_PAGE = 8;
     const CHARS_PER_LINE = 55;
-    
+
     const splitText = (text) => {
       if (!text) return [''];
       const lines = text.split('\n');
@@ -996,7 +995,7 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
       <div className="lr-workspace">
         {/* Left Hand Form Container */}
         <div className="invoice-form-container">
-          
+
           {/* Company Header Details */}
           <h4 className="form-section-title">Company Header Details</h4>
           <div className="form-grid-2">
@@ -1184,7 +1183,7 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
             />
             <div className="form-group">
               <label className="form-label">Payment Mode</label>
-              <select 
+              <select
                 className="form-input"
                 value={formData.paymentMode}
                 onChange={(e) => handleInputChange('paymentMode', e.target.value)}
@@ -1244,8 +1243,8 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                     />
                   </td>
                   <td>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="btn-icon-danger"
                       style={{ padding: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       onClick={() => removeCargoItemRow(idx)}
@@ -1258,15 +1257,15 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
               ))}
             </tbody>
           </table>
-          <button 
-            type="button" 
-            className="btn-add-item" 
+          <button
+            type="button"
+            className="btn-add-item"
             style={{ marginBottom: '1.5rem', padding: '4px 10px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
             onClick={addCargoItemRow}
           >
             <Plus size={12} /> Add Cargo Row
           </button>
- 
+
           {/* Tracking & references */}
           <h4 className="form-section-title">References & Marks</h4>
           <div className="form-grid-2">
@@ -1310,7 +1309,7 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
               onSelectSuggestion={(val) => handleInputChange('valueRs', val)}
             />
           </div>
- 
+
           {/* Charges panel */}
           <h4 className="form-section-title">Lorry Freight & Charges Breakdown</h4>
           <div className="form-grid-3">
@@ -1412,30 +1411,30 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
 
           {/* Authorized Signature Upload */}
           <h4 className="form-section-title">Authorized Signature</h4>
-          <div style={{ 
-            marginBottom: '1.5rem', 
-            backgroundColor: '#1E2330', 
-            padding: '12px', 
-            borderRadius: '6px', 
+          <div style={{
+            marginBottom: '1.5rem',
+            backgroundColor: '#1E2330',
+            padding: '12px',
+            borderRadius: '6px',
             border: '1px solid #262D3D',
             display: 'flex',
             flexDirection: 'column',
             gap: '8px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={handleSignatureUpload} 
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleSignatureUpload}
                 style={{ display: 'none' }}
                 id="sig-upload-input"
               />
-              <label 
-                htmlFor="sig-upload-input" 
-                className="btn-outline" 
-                style={{ 
-                  padding: '6px 12px', 
-                  fontSize: '0.8rem', 
+              <label
+                htmlFor="sig-upload-input"
+                className="btn-outline"
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '0.8rem',
                   cursor: 'pointer',
                   borderColor: 'rgba(0, 180, 216, 0.4)',
                   color: 'var(--primary)',
@@ -1451,12 +1450,12 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                 Upload Signature Image
               </label>
               {signatureImage && (
-                <button 
-                  className="btn-outline" 
-                  style={{ 
-                    padding: '6px 12px', 
-                    fontSize: '0.8rem', 
-                    color: '#EF4444', 
+                <button
+                  className="btn-outline"
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '0.8rem',
+                    color: '#EF4444',
                     borderColor: '#EF4444',
                     margin: 0,
                     borderRadius: '4px'
@@ -1471,21 +1470,21 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
               Supports JPG, PNG, WEBP, etc. Max size 5MB.
             </span>
             {signatureImage && (
-              <div style={{ 
-                marginTop: '8px', 
-                backgroundColor: '#FFFFFF', 
-                padding: '4px 8px', 
-                borderRadius: '4px', 
-                display: 'inline-flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
+              <div style={{
+                marginTop: '8px',
+                backgroundColor: '#FFFFFF',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 maxHeight: '40px',
                 alignSelf: 'flex-start'
               }}>
-                <img 
-                  src={signatureImage} 
-                  alt="Signature Preview" 
-                  style={{ maxHeight: '32px', objectFit: 'contain' }} 
+                <img
+                  src={signatureImage}
+                  alt="Signature Preview"
+                  style={{ maxHeight: '32px', objectFit: 'contain' }}
                 />
               </div>
             )}
@@ -1495,26 +1494,26 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
           <h4 className="form-section-title">Copy Type Selection</h4>
           <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', backgroundColor: '#1E2330', padding: '10px', borderRadius: '6px', border: '1px solid #262D3D' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.85rem', color: '#E2E8F0' }}>
-              <input 
-                type="checkbox" 
-                checked={formData.consignorCopy || false} 
-                onChange={(e) => handleInputChange('consignorCopy', e.target.checked)} 
+              <input
+                type="checkbox"
+                checked={formData.consignorCopy || false}
+                onChange={(e) => handleInputChange('consignorCopy', e.target.checked)}
               />
               Consignor Copy
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.85rem', color: '#E2E8F0' }}>
-              <input 
-                type="checkbox" 
-                checked={formData.consigneeCopy || false} 
-                onChange={(e) => handleInputChange('consigneeCopy', e.target.checked)} 
+              <input
+                type="checkbox"
+                checked={formData.consigneeCopy || false}
+                onChange={(e) => handleInputChange('consigneeCopy', e.target.checked)}
               />
               Consignee Copy
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.85rem', color: '#E2E8F0' }}>
-              <input 
-                type="checkbox" 
-                checked={formData.trackCopy || false} 
-                onChange={(e) => handleInputChange('trackCopy', e.target.checked)} 
+              <input
+                type="checkbox"
+                checked={formData.trackCopy || false}
+                onChange={(e) => handleInputChange('trackCopy', e.target.checked)}
               />
               Track Copy
             </label>
@@ -1538,16 +1537,16 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
         {/* Right Hand Live Preview Container */}
         <div className="lr-preview-container" ref={previewContainerRef}>
           <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '20px 0', backgroundColor: '#f0f2f5', minHeight: 'calc(100vh - 120px)' }}>
-            
+
             {/* Scale wrapper to prevent scrolling and shrink card visually */}
-            <div style={{ 
-              width: `${1123 * previewScale}px`, 
-              height: `${cardHeight * cargoChunks.length * previewScale}px`, 
+            <div style={{
+              width: `${1123 * previewScale}px`,
+              height: `${cardHeight * cargoChunks.length * previewScale}px`,
               position: 'relative',
               margin: '0 auto'
             }}>
-              <div id="lr-scale-wrapper" style={{ 
-                transform: `scale(${previewScale})`, 
+              <div id="lr-scale-wrapper" style={{
+                transform: `scale(${previewScale})`,
                 transformOrigin: 'top left',
                 position: 'absolute',
                 top: 0,
@@ -1562,636 +1561,636 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                   {cargoChunks.map((chunk, pageIndex) => (
                     <div key={pageIndex} style={{ width: '100%' }}>
                       {pageIndex > 0 && <div className="html2pdf__page-break" style={{ height: 0, margin: 0, padding: 0 }}></div>}
-                      <div 
-                        className="lr-preview-card" 
+                      <div
+                        className="lr-preview-card"
                         ref={pageIndex === 0 ? cardRef : null}
                       >
                         <div className="lr-preview-card-inner">
-                {/* Top Header Section */}
-                <div style={{ display: 'flex', width: '100%', alignItems: 'stretch', borderBottom: '2px solid #08103A' }}>
-                  
-                  {/* Logo Box */}
-                  <div style={{ width: '8%', borderRight: '2px solid #08103A', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2px' }}>
-                    <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <img src="/logo2.png" alt="Logo" style={{ width: '56px', height: '56px', objectFit: 'contain' }} />
-                      <span style={{ 
-                        position: 'absolute', 
-                        top: '1px', 
-                        right: '0px', 
-                        fontSize: '0.45rem', 
-                        fontWeight: 'bold', 
-                        color: '#08103A',
-                        lineHeight: '1'
-                      }}>TM</span>
-                    </div>
-                  </div>
+                          {/* Top Header Section */}
+                          <div style={{ display: 'flex', width: '100%', alignItems: 'stretch', borderBottom: '2px solid #08103A' }}>
 
-                  {/* Tax Info Box */}
-                  <div style={{ width: '17%', borderRight: '2px solid #08103A', padding: '2px 4px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    <table style={{ fontSize: '0.6rem', fontWeight: '900', lineHeight: '1.3', borderCollapse: 'collapse', width: '100%' }}>
-                      <tbody>
-                        <tr>
-                          <td style={{ padding: '0' }}>GSTIN</td>
-                          <td style={{ padding: '0' }}>: {formData.companyGstin}</td>
-                        </tr>
-                        <tr>
-                          <td style={{ padding: '0' }}>PAN</td>
-                          <td style={{ padding: '0' }}>: {formData.companyPan}</td>
-                        </tr>
-                        <tr>
-                          <td style={{ padding: '0' }}>UDYAM</td>
-                          <td style={{ padding: '0' }}>: {formData.companyUdyam}</td>
-                        </tr>
-                        <tr>
-                          <td style={{ padding: '0', whiteSpace: 'nowrap' }}>ISO <span style={{fontSize:'0.45rem'}}>Certificate</span></td>
-                          <td style={{ padding: '0' }}>: {formData.companyIso}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Main Title Box */}
-                  <div style={{ width: '56%', padding: '2px 0', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                    <div style={{ paddingLeft: '20px', margin: '0 0 2px 0', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                      <img src="/Title.png" alt="SREE VAARAHI AMMAN TRANSPORTS" style={{ height: '40px', width: '580px', maxWidth: '100%', objectFit: 'contain' }} />
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px', width: '100%', paddingLeft: '20px' }}>
-                      <div style={{ fontSize: '0.65rem', fontWeight: 'bold', textAlign: 'center', lineHeight: '1.2' }}>
-                        228/1, Rakkiyapalayam,<br/>Avinashi, Tirupur - 641 654.
-                      </div>
-                      <div style={{ fontSize: '0.75rem', fontWeight: '900', backgroundColor: '#e2e8f0', padding: '2px 10px', borderRadius: '4px' }}>
-                        CONTAINER SUPPLYING AGENCY
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Contact Box */}
-                  <div style={{ width: '19%', padding: '2px 4px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start' }}>
-                    <a 
-                      href={getWhatsAppUrl(formData.companyPhone1)} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.6rem', fontWeight: 'bold', textDecoration: 'none', cursor: 'pointer' }}
-                      onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
-                      onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
-                    >
-                      <img src={WHATSAPP_ICON_SVG} alt="WA" style={{verticalAlign:'middle'}}/>
-                      <span>: {formData.companyPhone1}</span>
-                    </a>
-                    <a 
-                      href={getTelUrl(formData.companyPhone2)} 
-                      style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.6rem', fontWeight: 'bold', marginTop: '3px', textDecoration: 'none', cursor: 'pointer' }}
-                      onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
-                      onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
-                    >
-                      <img src={PHONE_ICON_SVG} alt="Ph" style={{verticalAlign:'middle'}}/>
-                      <span>: {formData.companyPhone2}</span>
-                    </a>
-                    <a 
-                      href={`mailto:${formData.companyEmail}`} 
-                      style={{ fontSize: '0.52rem', fontWeight: '900', marginTop: '4px', textDecoration: 'none', cursor: 'pointer' }}
-                      onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
-                      onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
-                    >
-                      Mail: {formData.companyEmail}
-                    </a>
-                    <a 
-                      href={formData.companyWebsite ? (formData.companyWebsite.startsWith('http') ? formData.companyWebsite : `https://${formData.companyWebsite}`) : 'https://www.sreevaarahiammantransports.com'} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      style={{ fontSize: '0.52rem', fontWeight: '900', marginTop: '4px', textDecoration: 'none', cursor: 'pointer' }}
-                      onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
-                      onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
-                    >
-                      Web: {formData.companyWebsite || 'www.sreevaarahiammantransports.com'}
-                    </a>
-                  </div>
-                  
-                </div>
-
-                <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '0' }}>
-                  <tbody>
-                    <tr>
-                      {/* Consignor Box */}
-                      <td style={{ width: '38%', borderRight: '3px solid #08103A', borderBottom: '3px solid #08103A', padding: '6px', verticalAlign: 'top' }}>
-                        <div className="bg-dark-text-white" style={{ fontWeight: '900', fontSize: '0.65rem', padding: '1px 6px', marginBottom: '6px', display: 'inline-block' }}>CONSIGNOR :</div>
-                        <div style={{ fontSize: '0.7rem', lineHeight: '1.3' }}>
-                          
-                          <div style={{ display: 'flex', marginBottom: '4px', alignItems: 'flex-end' }}>
-                            <span style={{ fontWeight: 'bold', display: 'inline-block', width: '55px', whiteSpace: 'nowrap' }}>Name :</span>
-                            <span style={{ 
-                              fontWeight: 'bold', 
-                              flex: 1, 
-                              backgroundImage: `url("${DOTTED_LINE_SVG}")`,
-                              backgroundSize: '4px 1.25rem',
-                              backgroundRepeat: 'repeat-x',
-                              backgroundPosition: 'bottom left',
-                              wordBreak: 'break-word', 
-                              overflowWrap: 'break-word', 
-                              minHeight: '1.1rem', 
-                              paddingBottom: '1px' 
-                            }}>
-                              {formData.consignorName || '\u00A0'}
-                            </span>
-                          </div>
-                          
-                          <div style={{ 
-                            lineHeight: '1.25rem', 
-                            backgroundImage: `linear-gradient(to bottom, #FFFFFF 0%, #FFFFFF 100%), linear-gradient(to bottom, #FFFFFF 0%, #FFFFFF 100%), url("${DOTTED_LINE_SVG}")`, 
-                            backgroundSize: '55px 1.35rem, 100% 3px, 4px 1.25rem', 
-                            backgroundRepeat: 'no-repeat, no-repeat, repeat', 
-                            backgroundPosition: 'top left, top left, top left',
-                            minHeight: '3.75rem', 
-                            wordBreak: 'break-word',
-                            overflowWrap: 'break-word',
-                            whiteSpace: 'pre-wrap',
-                            marginBottom: '4px'
-                          }}>
-                            <span style={{ fontWeight: 'bold', display: 'inline-block', width: '55px' }}>Address :</span>
-                            <span style={{ fontWeight: 'bold' }}>{formData.consignorAddress}</span>
-                          </div>
-
-                          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                            <span style={{ fontWeight: 'bold', display: 'inline-block', width: '55px', whiteSpace: 'nowrap' }}>GSTIN :</span>
-                            <span style={{ 
-                              fontWeight: 'bold', 
-                              flex: 1, 
-                              backgroundImage: `url("${DOTTED_LINE_SVG}")`,
-                              backgroundSize: '4px 1.25rem',
-                              backgroundRepeat: 'repeat-x',
-                              backgroundPosition: 'bottom left',
-                              wordBreak: 'break-all', 
-                              overflowWrap: 'break-word', 
-                              minHeight: '1.1rem', 
-                              paddingBottom: '1px' 
-                            }}>
-                              {formData.consignorGst || '\u00A0'}
-                            </span>
-                          </div>
-                          
-                        </div>
-                      </td>
-
-                      {/* Consignee Box */}
-                      <td style={{ width: '38%', borderRight: '3px solid #08103A', borderBottom: '3px solid #08103A', padding: '6px', verticalAlign: 'top' }}>
-                        <div className="bg-dark-text-white" style={{ fontWeight: '900', fontSize: '0.65rem', padding: '1px 6px', marginBottom: '6px', display: 'inline-block' }}>CONSIGNEE :</div>
-                        <div style={{ fontSize: '0.7rem', lineHeight: '1.3' }}>
-                          
-                          <div style={{ display: 'flex', marginBottom: '4px', alignItems: 'flex-end' }}>
-                            <span style={{ fontWeight: 'bold', display: 'inline-block', width: '55px', whiteSpace: 'nowrap' }}>Name :</span>
-                            <span style={{ 
-                              fontWeight: 'bold', 
-                              flex: 1, 
-                              backgroundImage: `url("${DOTTED_LINE_SVG}")`,
-                              backgroundSize: '4px 1.25rem',
-                              backgroundRepeat: 'repeat-x',
-                              backgroundPosition: 'bottom left',
-                              wordBreak: 'break-word', 
-                              overflowWrap: 'break-word', 
-                              minHeight: '1.1rem', 
-                              paddingBottom: '1px' 
-                            }}>
-                              {formData.consigneeName || '\u00A0'}
-                            </span>
-                          </div>
-                          
-                          <div style={{ 
-                            lineHeight: '1.25rem', 
-                            backgroundImage: `linear-gradient(to bottom, #FFFFFF 0%, #FFFFFF 100%), linear-gradient(to bottom, #FFFFFF 0%, #FFFFFF 100%), url("${DOTTED_LINE_SVG}")`, 
-                            backgroundSize: '55px 1.35rem, 100% 3px, 4px 1.25rem', 
-                            backgroundRepeat: 'no-repeat, no-repeat, repeat', 
-                            backgroundPosition: 'top left, top left, top left',
-                            minHeight: '3.75rem', 
-                            wordBreak: 'break-word',
-                            overflowWrap: 'break-word',
-                            whiteSpace: 'pre-wrap',
-                            marginBottom: '4px'
-                          }}>
-                            <span style={{ fontWeight: 'bold', display: 'inline-block', width: '55px' }}>Address :</span>
-                            <span style={{ fontWeight: 'bold' }}>{formData.consigneeAddress}</span>
-                          </div>
-
-                          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                            <span style={{ fontWeight: 'bold', display: 'inline-block', width: '55px', whiteSpace: 'nowrap' }}>GSTIN :</span>
-                            <span style={{ 
-                              fontWeight: 'bold', 
-                              flex: 1, 
-                              backgroundImage: `url("${DOTTED_LINE_SVG}")`,
-                              backgroundSize: '4px 1.25rem',
-                              backgroundRepeat: 'repeat-x',
-                              backgroundPosition: 'bottom left',
-                              wordBreak: 'break-all', 
-                              overflowWrap: 'break-word', 
-                              minHeight: '1.1rem', 
-                              paddingBottom: '1px' 
-                            }}>
-                              {formData.consigneeGst || '\u00A0'}
-                            </span>
-                          </div>
-                          
-                        </div>
-                      </td>
-
-                      {/* Consignment Note Box */}
-                      <td style={{ width: '24%', borderBottom: '3px solid #08103A', padding: '0', verticalAlign: 'top' }}>
-                        <div style={{ padding: '6px 4px', textAlign: 'center', borderBottom: '3px solid #08103A' }}>
-                          <div style={{ fontSize: '0.65rem', fontWeight: 'bold', letterSpacing: '0.5px' }}>AT OWNER'S RISK</div>
-                          <div style={{ fontSize: '0.75rem', fontWeight: '900', textDecoration: 'underline', marginTop: '2px' }}>CONSIGNMENT NOTE</div>
-                        </div>
-                        <div style={{ fontSize: '0.7rem', display: 'flex', flexDirection: 'column' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #08103A', padding: '5px 6px', alignItems: 'flex-end' }}>
-                            <div style={{ display: 'flex', alignItems: 'flex-end', flex: 1 }}>
-                              <span style={{ fontWeight: 'bold', display: 'inline-block', width: '30px', whiteSpace: 'nowrap' }}>No :</span>
-                              <span style={{ 
-                                fontWeight: 'bold', 
-                                flex: 1, 
-                                color: '#c2410c',
-                                backgroundImage: `url("${DOTTED_LINE_SVG}")`,
-                                backgroundSize: '4px 1.25rem',
-                                backgroundRepeat: 'repeat-x',
-                                backgroundPosition: 'bottom left',
-                                minHeight: '1.1rem',
-                                paddingBottom: '1px',
-                                paddingLeft: '2px'
-                              }}>
-                                {formData.lrNo || '\u00A0'}
-                              </span>
+                            {/* Logo Box */}
+                            <div style={{ width: '8%', borderRight: '2px solid #08103A', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2px' }}>
+                              <div style={{ position: 'relative', display: 'inline-block' }}>
+                                <img src="/logo2.png" alt="Logo" style={{ width: '56px', height: '56px', objectFit: 'contain' }} />
+                                <span style={{
+                                  position: 'absolute',
+                                  top: '1px',
+                                  right: '0px',
+                                  fontSize: '0.45rem',
+                                  fontWeight: 'bold',
+                                  color: '#08103A',
+                                  lineHeight: '1'
+                                }}>TM</span>
+                              </div>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'flex-end', flex: 1.2, marginLeft: '8px' }}>
-                              <span style={{ fontWeight: 'bold', display: 'inline-block', width: '40px', whiteSpace: 'nowrap' }}>Date :</span>
-                              <span style={{ 
-                                fontWeight: 'bold', 
-                                flex: 1, 
-                                backgroundImage: `url("${DOTTED_LINE_SVG}")`,
-                                backgroundSize: '4px 1.25rem',
-                                backgroundRepeat: 'repeat-x',
-                                backgroundPosition: 'bottom left',
-                                minHeight: '1.1rem',
-                                paddingBottom: '1px',
-                                paddingLeft: '2px'
-                              }}>
-                                {formatDate(formData.date) || '\u00A0'}
-                              </span>
+
+                            {/* Tax Info Box */}
+                            <div style={{ width: '17%', borderRight: '2px solid #08103A', padding: '2px 4px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                              <table style={{ fontSize: '0.6rem', fontWeight: '900', lineHeight: '1.3', borderCollapse: 'collapse', width: '100%' }}>
+                                <tbody>
+                                  <tr>
+                                    <td style={{ padding: '0' }}>GSTIN</td>
+                                    <td style={{ padding: '0' }}>: {formData.companyGstin}</td>
+                                  </tr>
+                                  <tr>
+                                    <td style={{ padding: '0' }}>PAN</td>
+                                    <td style={{ padding: '0' }}>: {formData.companyPan}</td>
+                                  </tr>
+                                  <tr>
+                                    <td style={{ padding: '0' }}>UDYAM</td>
+                                    <td style={{ padding: '0' }}>: {formData.companyUdyam}</td>
+                                  </tr>
+                                  <tr>
+                                    <td style={{ padding: '0', whiteSpace: 'nowrap' }}>ISO <span style={{ fontSize: '0.45rem' }}>Certificate</span></td>
+                                    <td style={{ padding: '0' }}>: {formData.companyIso}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
                             </div>
-                          </div>
-                          <div style={{ borderBottom: '3px solid #08103A', padding: '5px 6px', display: 'flex', alignItems: 'flex-end' }}>
-                            <span style={{ fontWeight: 'bold', display: 'inline-block', width: '55px', whiteSpace: 'nowrap' }}>From :</span>
-                            <span style={{ 
-                              fontWeight: 'bold', 
-                              flex: 1, 
-                              backgroundImage: `url("${DOTTED_LINE_SVG}")`,
-                              backgroundSize: '4px 1.25rem',
-                              backgroundRepeat: 'repeat-x',
-                              backgroundPosition: 'bottom left',
-                              wordBreak: 'break-word', 
-                              overflowWrap: 'break-word', 
-                              minHeight: '1.1rem', 
-                              paddingBottom: '1px' 
-                            }}>
-                              {formData.from || '\u00A0'}
-                            </span>
-                          </div>
-                          <div style={{ padding: '5px 6px', display: 'flex', alignItems: 'flex-end' }}>
-                            <span style={{ fontWeight: 'bold', display: 'inline-block', width: '55px', whiteSpace: 'nowrap' }}>To :</span>
-                            <span style={{ 
-                              fontWeight: 'bold', 
-                              flex: 1, 
-                              backgroundImage: `url("${DOTTED_LINE_SVG}")`,
-                              backgroundSize: '4px 1.25rem',
-                              backgroundRepeat: 'repeat-x',
-                              backgroundPosition: 'bottom left',
-                              wordBreak: 'break-word', 
-                              overflowWrap: 'break-word', 
-                              minHeight: '1.1rem', 
-                              paddingBottom: '1px' 
-                            }}>
-                              {formData.to || '\u00A0'}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
 
-              {/* Main Cargo Specs Table Split */}
-              <table style={{ width: '100%', borderCollapse: 'collapse', flex: 1, height: '100%' }}>
-                <tbody style={{ height: '100%' }}>
-                  <tr style={{ height: '100%' }}>
-                    {/* Left Column (68%) */}
-                    <td style={{ width: '68%', borderRight: '3px solid #08103A', verticalAlign: 'top', padding: 0, height: '100%' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                        
-                        {/* Cargo Table Wrapper */}
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                          <table style={{ width: '100%', borderCollapse: 'collapse', height: '100%', tableLayout: 'fixed' }}>
-                            <thead>
-                              <tr style={{ borderBottom: '3px solid #08103A' }}>
-                                <th style={{ borderRight: '1.5px solid #08103A', padding: '6px', fontSize: '0.65rem', width: '15%' }}>No. of Packages</th>
-                                <th style={{ borderRight: '1.5px solid #08103A', padding: '6px', fontSize: '0.65rem', width: '55%' }}>GOODS DESCRIPTION</th>
-                                <th style={{ borderRight: '1.5px solid #08103A', padding: '6px', fontSize: '0.65rem', width: '15%' }}>Actual Weight in Kgs.</th>
-                                <th style={{ padding: '6px', fontSize: '0.65rem', width: '15%' }}>Charged Weight in Kgs.</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {chunk.map((item, index) => (
-                                <tr key={index}>
-                                  <td style={{ borderRight: '1.5px solid #08103A', padding: '6px 8px', textAlign: 'center', verticalAlign: 'top', fontSize: '0.8rem', fontWeight: 'bold', wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}>{item.noOfPackages || '\u00A0'}</td>
-                                  <td style={{ borderRight: '1.5px solid #08103A', padding: '6px 8px', verticalAlign: 'top', fontSize: '0.85rem', fontWeight: 'bold', wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}>{item.goodsDescription || '\u00A0'}</td>
-                                  <td style={{ borderRight: '1.5px solid #08103A', padding: '6px 8px', textAlign: 'center', verticalAlign: 'top', fontSize: '0.8rem', fontWeight: 'bold', wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}>{item.actualWeight || '\u00A0'}</td>
-                                  <td style={{ padding: '6px 8px', textAlign: 'center', verticalAlign: 'top', fontSize: '0.8rem', fontWeight: 'bold', wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}>{item.chargedWeight || '\u00A0'}</td>
-                                </tr>
-                              ))}
+                            {/* Main Title Box */}
+                            <div style={{ width: '56%', padding: '2px 0', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                              <div style={{ paddingLeft: '20px', margin: '0 0 2px 0', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                <img src="/Title.png" alt="SREE VAARAHI AMMAN TRANSPORTS" style={{ height: '45px', width: '500px', maxWidth: '100%', objectFit: 'contain' }} />
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px', width: '100%', paddingLeft: '20px' }}>
+                                <div style={{ fontSize: '0.65rem', fontWeight: 'bold', textAlign: 'center', lineHeight: '1.2' }}>
+                                  4/252, Vedivattam, Agraharam vill & po,<br />Natrampalli TK, Tirupattur DT. 635651
+                                </div>
+                                <div style={{ fontSize: '0.75rem', fontWeight: '900', backgroundColor: '#e2e8f0', padding: '2px 10px', borderRadius: '4px' }}>
+                                  CONTAINER SUPPLYING AGENCY
+                                </div>
+                              </div>
+                            </div>
 
-                              {/* Dummy row to absorb remaining vertical space so cargo items aren't stretched */}
-                              <tr style={{ height: '100%' }}>
-                                <td style={{ borderRight: '1.5px solid #08103A' }}></td>
-                                <td style={{ borderRight: '1.5px solid #08103A' }}></td>
-                                <td style={{ borderRight: '1.5px solid #08103A' }}></td>
-                                <td></td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-
-                        {/* Reference Table (E-way, Private Marks, Invoice No, Value Rs) */}
-                        <table style={{ width: '100%', borderCollapse: 'collapse', borderTop: '3px solid #08103A', borderBottom: '3px solid #08103A' }}>
-                          <tbody>
-                            <tr>
-                              <td colSpan={2} style={{ width: '60%', borderRight: '1.5px solid #08103A', borderBottom: '1.5px solid #08103A', padding: '6px 8px' }}>
-                                <div style={{ fontSize: '0.7rem', width: '100%', lineHeight: '1.2' }}>
-                                  <span style={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>E-way Bill No:</span>
-                                  <span style={{ fontWeight: 'bold', fontSize: '0.8rem', marginLeft: '4px' }}>
-                                    {formData.ewayBillNo || '\u00A0'}
-                                  </span>
-                                </div>
-                              </td>
-                              <td rowSpan={2} style={{ width: '40%', padding: '6px 8px', verticalAlign: 'top' }}>
-                                <div style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>Private Marks :</div>
-                                <div style={{ fontWeight: 'bold', fontSize: '0.8rem', marginTop: '6px' }}>
-                                  {formData.privateMarks || '\u00A0'}
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td style={{ width: '30%', borderRight: '1.5px solid #08103A', padding: '6px 8px' }}>
-                                <div style={{ fontSize: '0.7rem', width: '100%', lineHeight: '1.2' }}>
-                                  <span style={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Invoice No:</span>
-                                  <span style={{ fontWeight: 'bold', fontSize: '0.8rem', marginLeft: '4px' }}>
-                                    {formData.invoiceNo || '\u00A0'}
-                                  </span>
-                                </div>
-                              </td>
-                              <td style={{ width: '30%', borderRight: '1.5px solid #08103A', padding: '6px 8px' }}>
-                                <div style={{ fontSize: '0.7rem', width: '100%', lineHeight: '1.2' }}>
-                                  <span style={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Value Rs:</span>
-                                  <span style={{ fontWeight: 'bold', fontSize: '0.8rem', marginLeft: '4px' }}>
-                                    {formData.valueRs || '\u00A0'}
-                                  </span>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-
-                        {/* Signatures & Note Row */}
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                          <tbody>
-                            <tr>
-                              {/* Note Box */}
-                              <td style={{ width: '30%', borderRight: '3px solid #08103A', padding: '4px 6px', verticalAlign: 'top' }}>
-                                <strong style={{ fontSize: '0.65rem', display: 'block', textAlign: 'left' }}>Note :</strong>
-                                <div style={{ marginTop: '12px', fontSize: '0.58rem', lineHeight: '1.25', textAlign: 'center', fontWeight: 'bold' }}>
-                                  This Consignment Note is issued under<br />
-                                  subject to terms & conditions<br />
-                                  Printed overleaf
-                                </div>
-                              </td>
-                              {/* Receiver's Signature Box */}
-                              <td style={{ width: '35%', borderRight: '3px solid #08103A', padding: '6px', verticalAlign: 'top', fontSize: '0.65rem' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100px', justifyContent: 'space-between' }}>
-                                  <div style={{ textAlign: 'center' }}>Received the goods in good condition and order</div>
-                                  <div style={{ textAlign: 'center', marginTop: 'auto', paddingTop: '15px' }}>
-                                    <div style={{ borderBottom: '1px dotted #08103A', width: '80%', margin: '0 auto 4px' }}></div>
-                                    <strong>Receiver's Signature with seal</strong>
-                                  </div>
-                                </div>
-                              </td>
-                              {/* Authorised Signature Box */}
-                              <td style={{ width: '35%', padding: '6px', verticalAlign: 'top', fontSize: '0.65rem' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100px', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
-                                  <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                                    <img src="/Title.png" alt="SREE VAARAHI AMMAN TRANSPORTS" style={{ height: '18px', width: 'auto', objectFit: 'contain' }} />
-                                  </div>
-                                  {signatureImage && (
-                                    <img 
-                                      src={signatureImage} 
-                                      alt="Signature" 
-                                      style={{ 
-                                        position: 'absolute', 
-                                        top: '20px', 
-                                        height: '54px', 
-                                        maxWidth: '260px', 
-                                        objectFit: 'contain',
-                                        pointerEvents: 'none'
-                                      }} 
-                                    />
-                                  )}
-                                  <div style={{ textAlign: 'center', width: '100%', marginTop: 'auto', paddingTop: '15px' }}>
-                                    <div style={{ borderBottom: '1px dotted #08103A', width: '80%', margin: '0 auto 4px' }}></div>
-                                    <strong>Authorised Signature</strong>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-
-                        {/* Bottom Footer Section */}
-                        <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '30px', alignItems: 'center', padding: '4px 8px', borderTop: '3px solid #08103A' }}>
-                          <div style={{ lineHeight: '1.2', textAlign: 'left' }}>
-                            <span style={{ textDecoration: 'underline', fontWeight: '900', fontSize: '0.72rem' }}>TERMS & CONDITIONS</span><br />
-                            <span style={{ fontWeight: 'bold', fontSize: '0.62rem' }}>AND ANY ENQUIRES</span>
-                          </div>
-                          <div style={{ fontSize: '0.95rem', fontWeight: '900', color: '#08103A', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '30px' }}>
-                            <span>
-                              CONTACT : <a 
-                                href={getTelUrl('9655237104')} 
-                                style={{ 
-                                  color: '#08103A', 
-                                  textDecoration: 'none', 
-                                  cursor: 'pointer' 
-                                }}
+                            {/* Contact Box */}
+                            <div style={{ width: '19%', padding: '2px 4px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start' }}>
+                              <a
+                                href={getWhatsAppUrl(formData.companyPhone1)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.6rem', fontWeight: 'bold', textDecoration: 'none', cursor: 'pointer' }}
                                 onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
                                 onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
                               >
-                                9655237104
+                                <img src={WHATSAPP_ICON_SVG} alt="WA" style={{ verticalAlign: 'middle' }} />
+                                <span>: {formData.companyPhone1}</span>
                               </a>
-                            </span>
-                            <a 
-                              href={formData.companyWebsite ? (formData.companyWebsite.startsWith('http') ? formData.companyWebsite : `https://${formData.companyWebsite}`) : 'https://www.sreevaarahiammantransports.com'} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              style={{ 
-                                color: '#08103A', 
-                                textDecoration: 'underline', 
-                                fontSize: '0.95rem', 
-                                fontWeight: '900',
-                                cursor: 'pointer'
-                              }}
-                            >
-                              {formData.companyWebsite || 'www.sreevaarahiammantransports.com'}
-                            </a>
-                          </div>
-                        </div>
+                              <a
+                                href={getTelUrl(formData.companyPhone2)}
+                                style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.6rem', fontWeight: 'bold', marginTop: '3px', textDecoration: 'none', cursor: 'pointer' }}
+                                onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                                onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+                              >
+                                <img src={PHONE_ICON_SVG} alt="Ph" style={{ verticalAlign: 'middle' }} />
+                                <span>: {formData.companyPhone2}</span>
+                              </a>
+                              <a
+                                href={`mailto:${formData.companyEmail}`}
+                                style={{ fontSize: '0.52rem', fontWeight: '900', marginTop: '4px', textDecoration: 'none', cursor: 'pointer' }}
+                                onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                                onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+                              >
+                                Mail: {formData.companyEmail}
+                              </a>
+                              <a
+                                href={formData.companyWebsite ? (formData.companyWebsite.startsWith('http') ? formData.companyWebsite : `https://${formData.companyWebsite}`) : 'https://www.sreevaarahiammantransports.com'}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ fontSize: '0.52rem', fontWeight: '900', marginTop: '4px', textDecoration: 'none', cursor: 'pointer' }}
+                                onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                                onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+                              >
+                                Web: {formData.companyWebsite || 'www.sreevaarahiammantransports.com'}
+                              </a>
+                            </div>
 
-                      </div>
-                    </td>
-
-                    {/* Right Column (32%) */}
-                    <td style={{ width: '32%', verticalAlign: 'top', padding: 0, height: '100%' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                        
-                        {/* Truck & Payment Info */}
-                        <div style={{ padding: '6px', borderBottom: '3px solid #08103A', fontSize: '0.7rem', lineHeight: '1.5' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <strong>TRUCK NUMBER:</strong>
-                            <span style={{ 
-                              fontWeight: 'bold', 
-                              fontSize: '0.85rem', 
-                              color: '#08103A',
-                              backgroundImage: `url("${DOTTED_LINE_SVG}")`,
-                              backgroundSize: '4px 1.25rem',
-                              backgroundRepeat: 'repeat-x',
-                              backgroundPosition: 'bottom left',
-                              minHeight: '1.3rem',
-                              paddingBottom: '1px',
-                              display: 'block',
-                              marginTop: '2px'
-                            }}>
-                              {formData.truckNo || '\u00A0'}
-                            </span>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
-                            <strong>PAYMENT:</strong>
-                            <span className={formData.paymentMode === 'TOPAY' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{fontSize: '0.65rem'}}>TOPAY</span>
-                            <span className={formData.paymentMode === 'PAID' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{fontSize: '0.65rem'}}>PAID</span>
-                            <span className={formData.paymentMode === 'CREDIT' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{fontSize: '0.65rem'}}>CREDIT</span>
-                          </div>
-                        </div>
 
-                        {/* Charges breakdown table Wrapper */}
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.65rem', height: '100%' }}>
-                            <thead>
-                              <tr style={{ borderBottom: '1.5px solid #08103A' }}>
-                                <th style={{ borderRight: '1.5px solid #08103A', padding: '4px', textAlign: 'center', width: '60%' }}>Particulars</th>
-                                <th style={{ borderRight: '1.5px solid #08103A', padding: '4px', textAlign: 'center', width: '28%' }}>Rs.</th>
-                                <th style={{ padding: '4px', textAlign: 'center', width: '12%' }}>Ps.</th>
-                              </tr>
-                            </thead>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '0' }}>
                             <tbody>
-                              {[
-                                { label: 'Freight Per Kg. / CFT', amount: freightAmount },
-                                { label: 'Hamali', amount: formData.charges.hamali },
-                                { label: 'Door Pick-up Charges', amount: formData.charges.doorPickup },
-                                { label: 'Door Delivery Charges', amount: formData.charges.doorDelivery },
-                                { label: 'Statistical Charges', amount: formData.charges.statistical },
-                                { label: 'A.O.C', amount: formData.charges.aoc },
-                                { label: 'F.O.C', amount: formData.charges.foc },
-                                { label: 'Others', amount: formData.charges.others }
-                              ].map((item, idx) => {
-                                const { rs, ps } = getRsPs(item.amount);
-                                return (
-                                  <tr key={idx} style={{ borderBottom: '1px solid rgba(8, 16, 58, 0.2)' }}>
-                                    <td style={{ borderRight: '1.5px solid #08103A', padding: '4px 6px', fontWeight: '900', fontSize: '0.72rem', color: '#08103A' }}>
-                                      <div style={{ display: 'flex', alignItems: 'center', minHeight: '18px', height: '100%' }}>{item.label}</div>
-                                    </td>
-                                    <td style={{ borderRight: '1.5px solid #08103A', padding: '4px 6px', fontWeight: '900', fontSize: '0.75rem', color: '#08103A' }}>
-                                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}>{rs}</div>
-                                    </td>
-                                    <td style={{ padding: '4px 6px', fontWeight: '900', fontSize: '0.75rem', color: '#08103A' }}>
-                                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>{ps}</div>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
+                              <tr>
+                                {/* Consignor Box */}
+                                <td style={{ width: '38%', borderRight: '3px solid #08103A', borderBottom: '3px solid #08103A', padding: '6px', verticalAlign: 'top' }}>
+                                  <div className="bg-dark-text-white" style={{ fontWeight: '900', fontSize: '0.65rem', padding: '1px 6px', marginBottom: '6px', display: 'inline-block' }}>CONSIGNOR :</div>
+                                  <div style={{ fontSize: '0.7rem', lineHeight: '1.3' }}>
 
-                              {/* Subtotal */}
-                              {(() => {
-                                const { rs, ps } = getRsPs(subtotal);
-                                return (
-                                  <tr style={{ borderBottom: '1.5px solid #08103A' }}>
-                                    <td style={{ borderRight: '1.5px solid #08103A', padding: '4px 6px', fontWeight: 'bold' }}>SUB. TOTAL</td>
-                                    <td style={{ borderRight: '1.5px solid #08103A', padding: '4px 6px', textAlign: 'right', fontWeight: 'bold' }}>{rs}</td>
-                                    <td style={{ padding: '4px 6px', textAlign: 'center', fontWeight: 'bold' }}>{ps}</td>
-                                  </tr>
-                                );
-                              })()}
-
-                              {/* GST */}
-                              {(() => {
-                                const { rs, ps } = getRsPs(gstAmount);
-                                return (
-                                  <tr style={{ borderBottom: '2px solid #08103A' }}>
-                                    <td style={{ borderRight: '1.5px solid #08103A', padding: '4px 6px', fontWeight: 'bold' }}>GST @ {formData.charges.gstRate}%</td>
-                                    <td style={{ borderRight: '1.5px solid #08103A', padding: '4px 6px', textAlign: 'right', fontWeight: 'bold' }}>{rs}</td>
-                                    <td style={{ padding: '4px 6px', textAlign: 'center', fontWeight: 'bold' }}>{ps}</td>
-                                  </tr>
-                                );
-                              })()}
-
-                              {/* G.TOTAL */}
-                              {(() => {
-                                const { rs, ps } = getRsPs(totalAmount);
-                                return (
-                                  <tr style={{ borderBottom: '3px solid #08103A' }}>
-                                    <td style={{ borderRight: '1.5px solid #08103A', padding: '6px', fontWeight: '900', fontSize: '0.75rem' }}>G.TOTAL</td>
-                                    <td style={{ borderRight: '1.5px solid #08103A', padding: '6px', textAlign: 'right', fontWeight: '900', fontSize: '0.75rem' }}>{rs}</td>
-                                    <td style={{ padding: '6px', textAlign: 'center', fontWeight: '900', fontSize: '0.75rem' }}>{ps}</td>
-                                  </tr>
-                                );
-                              })()}
-
-                              {/* Copy Types Selector Checklist */}
-                              {[
-                                { label: 'CONSIGNOR COPY', checked: formData.consignorCopy },
-                                { label: 'CONSIGNEE COPY', checked: formData.consigneeCopy },
-                                { label: 'TRACK COPY', checked: formData.trackCopy }
-                              ].map((copy, index) => (
-                                <tr key={`copy-${index}`} style={{ borderBottom: index < 2 ? '1.5px solid #08103A' : 'none', height: '24px' }}>
-                                  <td style={{ borderRight: '1.5px solid #08103A', padding: '3px 6px', fontWeight: 'bold', fontSize: '0.58rem' }}>
-                                    {copy.label}
-                                  </td>
-                                  <td colSpan={2} style={{ padding: '2px', textAlign: 'center', verticalAlign: 'middle' }}>
-                                    <div style={{
-                                      width: '32px',
-                                      height: '18px',
-                                      border: '1.5px solid #08103A',
-                                      margin: '0 auto',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      fontSize: '0.85rem',
-                                      fontWeight: 'bold',
-                                      backgroundColor: copy.checked ? 'rgba(8, 16, 58, 0.15)' : 'transparent'
-                                    }}>
-                                      {copy.checked ? '✓' : ''}
+                                    <div style={{ display: 'flex', marginBottom: '4px', alignItems: 'flex-end' }}>
+                                      <span style={{ fontWeight: 'bold', display: 'inline-block', width: '55px', whiteSpace: 'nowrap' }}>Name :</span>
+                                      <span style={{
+                                        fontWeight: 'bold',
+                                        flex: 1,
+                                        backgroundImage: `url("${DOTTED_LINE_SVG}")`,
+                                        backgroundSize: '4px 1.25rem',
+                                        backgroundRepeat: 'repeat-x',
+                                        backgroundPosition: 'bottom left',
+                                        wordBreak: 'break-word',
+                                        overflowWrap: 'break-word',
+                                        minHeight: '1.1rem',
+                                        paddingBottom: '1px'
+                                      }}>
+                                        {formData.consignorName || '\u00A0'}
+                                      </span>
                                     </div>
-                                  </td>
-                                </tr>
-                              ))}
 
+                                    <div style={{
+                                      lineHeight: '1.25rem',
+                                      backgroundImage: `linear-gradient(to bottom, #FFFFFF 0%, #FFFFFF 100%), linear-gradient(to bottom, #FFFFFF 0%, #FFFFFF 100%), url("${DOTTED_LINE_SVG}")`,
+                                      backgroundSize: '55px 1.35rem, 100% 3px, 4px 1.25rem',
+                                      backgroundRepeat: 'no-repeat, no-repeat, repeat',
+                                      backgroundPosition: 'top left, top left, top left',
+                                      minHeight: '3.75rem',
+                                      wordBreak: 'break-word',
+                                      overflowWrap: 'break-word',
+                                      whiteSpace: 'pre-wrap',
+                                      marginBottom: '4px'
+                                    }}>
+                                      <span style={{ fontWeight: 'bold', display: 'inline-block', width: '55px' }}>Address :</span>
+                                      <span style={{ fontWeight: 'bold' }}>{formData.consignorAddress}</span>
+                                    </div>
+
+                                    <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                                      <span style={{ fontWeight: 'bold', display: 'inline-block', width: '55px', whiteSpace: 'nowrap' }}>GSTIN :</span>
+                                      <span style={{
+                                        fontWeight: 'bold',
+                                        flex: 1,
+                                        backgroundImage: `url("${DOTTED_LINE_SVG}")`,
+                                        backgroundSize: '4px 1.25rem',
+                                        backgroundRepeat: 'repeat-x',
+                                        backgroundPosition: 'bottom left',
+                                        wordBreak: 'break-all',
+                                        overflowWrap: 'break-word',
+                                        minHeight: '1.1rem',
+                                        paddingBottom: '1px'
+                                      }}>
+                                        {formData.consignorGst || '\u00A0'}
+                                      </span>
+                                    </div>
+
+                                  </div>
+                                </td>
+
+                                {/* Consignee Box */}
+                                <td style={{ width: '38%', borderRight: '3px solid #08103A', borderBottom: '3px solid #08103A', padding: '6px', verticalAlign: 'top' }}>
+                                  <div className="bg-dark-text-white" style={{ fontWeight: '900', fontSize: '0.65rem', padding: '1px 6px', marginBottom: '6px', display: 'inline-block' }}>CONSIGNEE :</div>
+                                  <div style={{ fontSize: '0.7rem', lineHeight: '1.3' }}>
+
+                                    <div style={{ display: 'flex', marginBottom: '4px', alignItems: 'flex-end' }}>
+                                      <span style={{ fontWeight: 'bold', display: 'inline-block', width: '55px', whiteSpace: 'nowrap' }}>Name :</span>
+                                      <span style={{
+                                        fontWeight: 'bold',
+                                        flex: 1,
+                                        backgroundImage: `url("${DOTTED_LINE_SVG}")`,
+                                        backgroundSize: '4px 1.25rem',
+                                        backgroundRepeat: 'repeat-x',
+                                        backgroundPosition: 'bottom left',
+                                        wordBreak: 'break-word',
+                                        overflowWrap: 'break-word',
+                                        minHeight: '1.1rem',
+                                        paddingBottom: '1px'
+                                      }}>
+                                        {formData.consigneeName || '\u00A0'}
+                                      </span>
+                                    </div>
+
+                                    <div style={{
+                                      lineHeight: '1.25rem',
+                                      backgroundImage: `linear-gradient(to bottom, #FFFFFF 0%, #FFFFFF 100%), linear-gradient(to bottom, #FFFFFF 0%, #FFFFFF 100%), url("${DOTTED_LINE_SVG}")`,
+                                      backgroundSize: '55px 1.35rem, 100% 3px, 4px 1.25rem',
+                                      backgroundRepeat: 'no-repeat, no-repeat, repeat',
+                                      backgroundPosition: 'top left, top left, top left',
+                                      minHeight: '3.75rem',
+                                      wordBreak: 'break-word',
+                                      overflowWrap: 'break-word',
+                                      whiteSpace: 'pre-wrap',
+                                      marginBottom: '4px'
+                                    }}>
+                                      <span style={{ fontWeight: 'bold', display: 'inline-block', width: '55px' }}>Address :</span>
+                                      <span style={{ fontWeight: 'bold' }}>{formData.consigneeAddress}</span>
+                                    </div>
+
+                                    <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                                      <span style={{ fontWeight: 'bold', display: 'inline-block', width: '55px', whiteSpace: 'nowrap' }}>GSTIN :</span>
+                                      <span style={{
+                                        fontWeight: 'bold',
+                                        flex: 1,
+                                        backgroundImage: `url("${DOTTED_LINE_SVG}")`,
+                                        backgroundSize: '4px 1.25rem',
+                                        backgroundRepeat: 'repeat-x',
+                                        backgroundPosition: 'bottom left',
+                                        wordBreak: 'break-all',
+                                        overflowWrap: 'break-word',
+                                        minHeight: '1.1rem',
+                                        paddingBottom: '1px'
+                                      }}>
+                                        {formData.consigneeGst || '\u00A0'}
+                                      </span>
+                                    </div>
+
+                                  </div>
+                                </td>
+
+                                {/* Consignment Note Box */}
+                                <td style={{ width: '24%', borderBottom: '3px solid #08103A', padding: '0', verticalAlign: 'top' }}>
+                                  <div style={{ padding: '6px 4px', textAlign: 'center', borderBottom: '3px solid #08103A' }}>
+                                    <div style={{ fontSize: '0.65rem', fontWeight: 'bold', letterSpacing: '0.5px' }}>AT OWNER'S RISK</div>
+                                    <div style={{ fontSize: '0.75rem', fontWeight: '900', textDecoration: 'underline', marginTop: '2px' }}>CONSIGNMENT NOTE</div>
+                                  </div>
+                                  <div style={{ fontSize: '0.7rem', display: 'flex', flexDirection: 'column' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #08103A', padding: '5px 6px', alignItems: 'flex-end' }}>
+                                      <div style={{ display: 'flex', alignItems: 'flex-end', flex: 1 }}>
+                                        <span style={{ fontWeight: 'bold', display: 'inline-block', width: '30px', whiteSpace: 'nowrap' }}>No :</span>
+                                        <span style={{
+                                          fontWeight: 'bold',
+                                          flex: 1,
+                                          color: '#c2410c',
+                                          backgroundImage: `url("${DOTTED_LINE_SVG}")`,
+                                          backgroundSize: '4px 1.25rem',
+                                          backgroundRepeat: 'repeat-x',
+                                          backgroundPosition: 'bottom left',
+                                          minHeight: '1.1rem',
+                                          paddingBottom: '1px',
+                                          paddingLeft: '2px'
+                                        }}>
+                                          {formData.lrNo || '\u00A0'}
+                                        </span>
+                                      </div>
+                                      <div style={{ display: 'flex', alignItems: 'flex-end', flex: 1.2, marginLeft: '8px' }}>
+                                        <span style={{ fontWeight: 'bold', display: 'inline-block', width: '40px', whiteSpace: 'nowrap' }}>Date :</span>
+                                        <span style={{
+                                          fontWeight: 'bold',
+                                          flex: 1,
+                                          backgroundImage: `url("${DOTTED_LINE_SVG}")`,
+                                          backgroundSize: '4px 1.25rem',
+                                          backgroundRepeat: 'repeat-x',
+                                          backgroundPosition: 'bottom left',
+                                          minHeight: '1.1rem',
+                                          paddingBottom: '1px',
+                                          paddingLeft: '2px'
+                                        }}>
+                                          {formatDate(formData.date) || '\u00A0'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <div style={{ borderBottom: '3px solid #08103A', padding: '5px 6px', display: 'flex', alignItems: 'flex-end' }}>
+                                      <span style={{ fontWeight: 'bold', display: 'inline-block', width: '55px', whiteSpace: 'nowrap' }}>From :</span>
+                                      <span style={{
+                                        fontWeight: 'bold',
+                                        flex: 1,
+                                        backgroundImage: `url("${DOTTED_LINE_SVG}")`,
+                                        backgroundSize: '4px 1.25rem',
+                                        backgroundRepeat: 'repeat-x',
+                                        backgroundPosition: 'bottom left',
+                                        wordBreak: 'break-word',
+                                        overflowWrap: 'break-word',
+                                        minHeight: '1.1rem',
+                                        paddingBottom: '1px'
+                                      }}>
+                                        {formData.from || '\u00A0'}
+                                      </span>
+                                    </div>
+                                    <div style={{ padding: '5px 6px', display: 'flex', alignItems: 'flex-end' }}>
+                                      <span style={{ fontWeight: 'bold', display: 'inline-block', width: '55px', whiteSpace: 'nowrap' }}>To :</span>
+                                      <span style={{
+                                        fontWeight: 'bold',
+                                        flex: 1,
+                                        backgroundImage: `url("${DOTTED_LINE_SVG}")`,
+                                        backgroundSize: '4px 1.25rem',
+                                        backgroundRepeat: 'repeat-x',
+                                        backgroundPosition: 'bottom left',
+                                        wordBreak: 'break-word',
+                                        overflowWrap: 'break-word',
+                                        minHeight: '1.1rem',
+                                        paddingBottom: '1px'
+                                      }}>
+                                        {formData.to || '\u00A0'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
                             </tbody>
                           </table>
-                        </div>
 
-                      </div>
-                    </td>
+                          {/* Main Cargo Specs Table Split */}
+                          <table style={{ width: '100%', borderCollapse: 'collapse', flex: 1, height: '100%' }}>
+                            <tbody style={{ height: '100%' }}>
+                              <tr style={{ height: '100%' }}>
+                                {/* Left Column (68%) */}
+                                <td style={{ width: '68%', borderRight: '3px solid #08103A', verticalAlign: 'top', padding: 0, height: '100%' }}>
+                                  <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
-                  </tr>
-                </tbody>
-              </table>
+                                    {/* Cargo Table Wrapper */}
+                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                      <table style={{ width: '100%', borderCollapse: 'collapse', height: '100%', tableLayout: 'fixed' }}>
+                                        <thead>
+                                          <tr style={{ borderBottom: '3px solid #08103A' }}>
+                                            <th style={{ borderRight: '1.5px solid #08103A', padding: '6px', fontSize: '0.65rem', width: '15%' }}>No. of Packages</th>
+                                            <th style={{ borderRight: '1.5px solid #08103A', padding: '6px', fontSize: '0.65rem', width: '55%' }}>GOODS DESCRIPTION</th>
+                                            <th style={{ borderRight: '1.5px solid #08103A', padding: '6px', fontSize: '0.65rem', width: '15%' }}>Actual Weight in Kgs.</th>
+                                            <th style={{ padding: '6px', fontSize: '0.65rem', width: '15%' }}>Charged Weight in Kgs.</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {chunk.map((item, index) => (
+                                            <tr key={index}>
+                                              <td style={{ borderRight: '1.5px solid #08103A', padding: '6px 8px', textAlign: 'center', verticalAlign: 'top', fontSize: '0.8rem', fontWeight: 'bold', wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}>{item.noOfPackages || '\u00A0'}</td>
+                                              <td style={{ borderRight: '1.5px solid #08103A', padding: '6px 8px', verticalAlign: 'top', fontSize: '0.85rem', fontWeight: 'bold', wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}>{item.goodsDescription || '\u00A0'}</td>
+                                              <td style={{ borderRight: '1.5px solid #08103A', padding: '6px 8px', textAlign: 'center', verticalAlign: 'top', fontSize: '0.8rem', fontWeight: 'bold', wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}>{item.actualWeight || '\u00A0'}</td>
+                                              <td style={{ padding: '6px 8px', textAlign: 'center', verticalAlign: 'top', fontSize: '0.8rem', fontWeight: 'bold', wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}>{item.chargedWeight || '\u00A0'}</td>
+                                            </tr>
+                                          ))}
+
+                                          {/* Dummy row to absorb remaining vertical space so cargo items aren't stretched */}
+                                          <tr style={{ height: '100%' }}>
+                                            <td style={{ borderRight: '1.5px solid #08103A' }}></td>
+                                            <td style={{ borderRight: '1.5px solid #08103A' }}></td>
+                                            <td style={{ borderRight: '1.5px solid #08103A' }}></td>
+                                            <td></td>
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                    </div>
+
+                                    {/* Reference Table (E-way, Private Marks, Invoice No, Value Rs) */}
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', borderTop: '3px solid #08103A', borderBottom: '3px solid #08103A' }}>
+                                      <tbody>
+                                        <tr>
+                                          <td colSpan={2} style={{ width: '60%', borderRight: '1.5px solid #08103A', borderBottom: '1.5px solid #08103A', padding: '6px 8px' }}>
+                                            <div style={{ fontSize: '0.7rem', width: '100%', lineHeight: '1.2' }}>
+                                              <span style={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>E-way Bill No:</span>
+                                              <span style={{ fontWeight: 'bold', fontSize: '0.8rem', marginLeft: '4px' }}>
+                                                {formData.ewayBillNo || '\u00A0'}
+                                              </span>
+                                            </div>
+                                          </td>
+                                          <td rowSpan={2} style={{ width: '40%', padding: '6px 8px', verticalAlign: 'top' }}>
+                                            <div style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>Private Marks :</div>
+                                            <div style={{ fontWeight: 'bold', fontSize: '0.8rem', marginTop: '6px' }}>
+                                              {formData.privateMarks || '\u00A0'}
+                                            </div>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td style={{ width: '30%', borderRight: '1.5px solid #08103A', padding: '6px 8px' }}>
+                                            <div style={{ fontSize: '0.7rem', width: '100%', lineHeight: '1.2' }}>
+                                              <span style={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Invoice No:</span>
+                                              <span style={{ fontWeight: 'bold', fontSize: '0.8rem', marginLeft: '4px' }}>
+                                                {formData.invoiceNo || '\u00A0'}
+                                              </span>
+                                            </div>
+                                          </td>
+                                          <td style={{ width: '30%', borderRight: '1.5px solid #08103A', padding: '6px 8px' }}>
+                                            <div style={{ fontSize: '0.7rem', width: '100%', lineHeight: '1.2' }}>
+                                              <span style={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>Value Rs:</span>
+                                              <span style={{ fontWeight: 'bold', fontSize: '0.8rem', marginLeft: '4px' }}>
+                                                {formData.valueRs || '\u00A0'}
+                                              </span>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+
+                                    {/* Signatures & Note Row */}
+                                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                      <tbody>
+                                        <tr>
+                                          {/* Note Box */}
+                                          <td style={{ width: '30%', borderRight: '3px solid #08103A', padding: '4px 6px', verticalAlign: 'top' }}>
+                                            <strong style={{ fontSize: '0.65rem', display: 'block', textAlign: 'left' }}>Note :</strong>
+                                            <div style={{ marginTop: '12px', fontSize: '0.58rem', lineHeight: '1.25', textAlign: 'center', fontWeight: 'bold' }}>
+                                              This Consignment Note is issued under<br />
+                                              subject to terms & conditions<br />
+                                              Printed overleaf
+                                            </div>
+                                          </td>
+                                          {/* Receiver's Signature Box */}
+                                          <td style={{ width: '35%', borderRight: '3px solid #08103A', padding: '6px', verticalAlign: 'top', fontSize: '0.65rem' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100px', justifyContent: 'space-between' }}>
+                                              <div style={{ textAlign: 'center' }}>Received the goods in good condition and order</div>
+                                              <div style={{ textAlign: 'center', marginTop: 'auto', paddingTop: '15px' }}>
+                                                <div style={{ borderBottom: '1px dotted #08103A', width: '80%', margin: '0 auto 4px' }}></div>
+                                                <strong>Receiver's Signature with seal</strong>
+                                              </div>
+                                            </div>
+                                          </td>
+                                          {/* Authorised Signature Box */}
+                                          <td style={{ width: '35%', padding: '6px', verticalAlign: 'top', fontSize: '0.65rem' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100px', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
+                                              <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                                                <img src="/Title.png" alt="SREE VAARAHI AMMAN TRANSPORTS" style={{ height: '18px', width: 'auto', objectFit: 'contain' }} />
+                                              </div>
+                                              {signatureImage && (
+                                                <img
+                                                  src={signatureImage}
+                                                  alt="Signature"
+                                                  style={{
+                                                    position: 'absolute',
+                                                    top: '20px',
+                                                    height: '54px',
+                                                    maxWidth: '260px',
+                                                    objectFit: 'contain',
+                                                    pointerEvents: 'none'
+                                                  }}
+                                                />
+                                              )}
+                                              <div style={{ textAlign: 'center', width: '100%', marginTop: 'auto', paddingTop: '15px' }}>
+                                                <div style={{ borderBottom: '1px dotted #08103A', width: '80%', margin: '0 auto 4px' }}></div>
+                                                <strong>Authorised Signature</strong>
+                                              </div>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+
+                                    {/* Bottom Footer Section */}
+                                    <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '30px', alignItems: 'center', padding: '4px 8px', borderTop: '3px solid #08103A' }}>
+                                      <div style={{ lineHeight: '1.2', textAlign: 'left' }}>
+                                        <span style={{ textDecoration: 'underline', fontWeight: '900', fontSize: '0.72rem' }}>TERMS & CONDITIONS</span><br />
+                                        <span style={{ fontWeight: 'bold', fontSize: '0.62rem' }}>AND ANY ENQUIRES</span>
+                                      </div>
+                                      <div style={{ fontSize: '0.95rem', fontWeight: '900', color: '#08103A', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '30px' }}>
+                                        <span>
+                                          CONTACT : <a
+                                            href={getTelUrl('9566738884')}
+                                            style={{
+                                              color: '#08103A',
+                                              textDecoration: 'none',
+                                              cursor: 'pointer'
+                                            }}
+                                            onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                                            onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+                                          >
+                                            9566738884
+                                          </a>
+                                        </span>
+                                        <a
+                                          href={formData.companyWebsite ? (formData.companyWebsite.startsWith('http') ? formData.companyWebsite : `https://${formData.companyWebsite}`) : 'https://www.sreevaarahiammantransports.com'}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          style={{
+                                            color: '#08103A',
+                                            textDecoration: 'underline',
+                                            fontSize: '0.95rem',
+                                            fontWeight: '900',
+                                            cursor: 'pointer'
+                                          }}
+                                        >
+                                          {formData.companyWebsite || 'www.sreevaarahiammantransports.com'}
+                                        </a>
+                                      </div>
+                                    </div>
+
+                                  </div>
+                                </td>
+
+                                {/* Right Column (32%) */}
+                                <td style={{ width: '32%', verticalAlign: 'top', padding: 0, height: '100%' }}>
+                                  <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+
+                                    {/* Truck & Payment Info */}
+                                    <div style={{ padding: '6px', borderBottom: '3px solid #08103A', fontSize: '0.7rem', lineHeight: '1.5' }}>
+                                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                        <strong>TRUCK NUMBER:</strong>
+                                        <span style={{
+                                          fontWeight: 'bold',
+                                          fontSize: '0.85rem',
+                                          color: '#08103A',
+                                          backgroundImage: `url("${DOTTED_LINE_SVG}")`,
+                                          backgroundSize: '4px 1.25rem',
+                                          backgroundRepeat: 'repeat-x',
+                                          backgroundPosition: 'bottom left',
+                                          minHeight: '1.3rem',
+                                          paddingBottom: '1px',
+                                          display: 'block',
+                                          marginTop: '2px'
+                                        }}>
+                                          {formData.truckNo || '\u00A0'}
+                                        </span>
+                                      </div>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
+                                        <strong>PAYMENT:</strong>
+                                        <span className={formData.paymentMode === 'TOPAY' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{ fontSize: '0.65rem' }}>TOPAY</span>
+                                        <span className={formData.paymentMode === 'PAID' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{ fontSize: '0.65rem' }}>PAID</span>
+                                        <span className={formData.paymentMode === 'CREDIT' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{ fontSize: '0.65rem' }}>CREDIT</span>
+                                      </div>
+                                    </div>
+
+                                    {/* Charges breakdown table Wrapper */}
+                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.65rem', height: '100%' }}>
+                                        <thead>
+                                          <tr style={{ borderBottom: '1.5px solid #08103A' }}>
+                                            <th style={{ borderRight: '1.5px solid #08103A', padding: '4px', textAlign: 'center', width: '60%' }}>Particulars</th>
+                                            <th style={{ borderRight: '1.5px solid #08103A', padding: '4px', textAlign: 'center', width: '28%' }}>Rs.</th>
+                                            <th style={{ padding: '4px', textAlign: 'center', width: '12%' }}>Ps.</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {[
+                                            { label: 'Freight Per Kg. / CFT', amount: freightAmount },
+                                            { label: 'Hamali', amount: formData.charges.hamali },
+                                            { label: 'Door Pick-up Charges', amount: formData.charges.doorPickup },
+                                            { label: 'Door Delivery Charges', amount: formData.charges.doorDelivery },
+                                            { label: 'Statistical Charges', amount: formData.charges.statistical },
+                                            { label: 'A.O.C', amount: formData.charges.aoc },
+                                            { label: 'F.O.C', amount: formData.charges.foc },
+                                            { label: 'Others', amount: formData.charges.others }
+                                          ].map((item, idx) => {
+                                            const { rs, ps } = getRsPs(item.amount);
+                                            return (
+                                              <tr key={idx} style={{ borderBottom: '1px solid rgba(8, 16, 58, 0.2)' }}>
+                                                <td style={{ borderRight: '1.5px solid #08103A', padding: '4px 6px', fontWeight: '900', fontSize: '0.72rem', color: '#08103A' }}>
+                                                  <div style={{ display: 'flex', alignItems: 'center', minHeight: '18px', height: '100%' }}>{item.label}</div>
+                                                </td>
+                                                <td style={{ borderRight: '1.5px solid #08103A', padding: '4px 6px', fontWeight: '900', fontSize: '0.75rem', color: '#08103A' }}>
+                                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}>{rs}</div>
+                                                </td>
+                                                <td style={{ padding: '4px 6px', fontWeight: '900', fontSize: '0.75rem', color: '#08103A' }}>
+                                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>{ps}</div>
+                                                </td>
+                                              </tr>
+                                            );
+                                          })}
+
+                                          {/* Subtotal */}
+                                          {(() => {
+                                            const { rs, ps } = getRsPs(subtotal);
+                                            return (
+                                              <tr style={{ borderBottom: '1.5px solid #08103A' }}>
+                                                <td style={{ borderRight: '1.5px solid #08103A', padding: '4px 6px', fontWeight: 'bold' }}>SUB. TOTAL</td>
+                                                <td style={{ borderRight: '1.5px solid #08103A', padding: '4px 6px', textAlign: 'right', fontWeight: 'bold' }}>{rs}</td>
+                                                <td style={{ padding: '4px 6px', textAlign: 'center', fontWeight: 'bold' }}>{ps}</td>
+                                              </tr>
+                                            );
+                                          })()}
+
+                                          {/* GST */}
+                                          {(() => {
+                                            const { rs, ps } = getRsPs(gstAmount);
+                                            return (
+                                              <tr style={{ borderBottom: '2px solid #08103A' }}>
+                                                <td style={{ borderRight: '1.5px solid #08103A', padding: '4px 6px', fontWeight: 'bold' }}>GST @ {formData.charges.gstRate}%</td>
+                                                <td style={{ borderRight: '1.5px solid #08103A', padding: '4px 6px', textAlign: 'right', fontWeight: 'bold' }}>{rs}</td>
+                                                <td style={{ padding: '4px 6px', textAlign: 'center', fontWeight: 'bold' }}>{ps}</td>
+                                              </tr>
+                                            );
+                                          })()}
+
+                                          {/* G.TOTAL */}
+                                          {(() => {
+                                            const { rs, ps } = getRsPs(totalAmount);
+                                            return (
+                                              <tr style={{ borderBottom: '3px solid #08103A' }}>
+                                                <td style={{ borderRight: '1.5px solid #08103A', padding: '6px', fontWeight: '900', fontSize: '0.75rem' }}>G.TOTAL</td>
+                                                <td style={{ borderRight: '1.5px solid #08103A', padding: '6px', textAlign: 'right', fontWeight: '900', fontSize: '0.75rem' }}>{rs}</td>
+                                                <td style={{ padding: '6px', textAlign: 'center', fontWeight: '900', fontSize: '0.75rem' }}>{ps}</td>
+                                              </tr>
+                                            );
+                                          })()}
+
+                                          {/* Copy Types Selector Checklist */}
+                                          {[
+                                            { label: 'CONSIGNOR COPY', checked: formData.consignorCopy },
+                                            { label: 'CONSIGNEE COPY', checked: formData.consigneeCopy },
+                                            { label: 'TRACK COPY', checked: formData.trackCopy }
+                                          ].map((copy, index) => (
+                                            <tr key={`copy-${index}`} style={{ borderBottom: index < 2 ? '1.5px solid #08103A' : 'none', height: '24px' }}>
+                                              <td style={{ borderRight: '1.5px solid #08103A', padding: '3px 6px', fontWeight: 'bold', fontSize: '0.58rem' }}>
+                                                {copy.label}
+                                              </td>
+                                              <td colSpan={2} style={{ padding: '2px', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                <div style={{
+                                                  width: '32px',
+                                                  height: '18px',
+                                                  border: '1.5px solid #08103A',
+                                                  margin: '0 auto',
+                                                  display: 'flex',
+                                                  alignItems: 'center',
+                                                  justifyContent: 'center',
+                                                  fontSize: '0.85rem',
+                                                  fontWeight: 'bold',
+                                                  backgroundColor: copy.checked ? 'rgba(8, 16, 58, 0.15)' : 'transparent'
+                                                }}>
+                                                  {copy.checked ? '✓' : ''}
+                                                </div>
+                                              </td>
+                                            </tr>
+                                          ))}
+
+                                        </tbody>
+                                      </table>
+                                    </div>
+
+                                  </div>
+                                </td>
+
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
                       </div>
                     </div>
@@ -2230,6 +2229,6 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
           </div>
         </div>
       )}
-    </div>                  
+    </div>
   );
 }

@@ -13,25 +13,25 @@ export default function LandingPage({ onNavigate }) {
 
   const branches = [
     {
-      id: 'tirupur-hq',
-      label: 'TIRUPUR (HQ)',
-      name: 'TIRUPUR HEAD OFFICE',
-      zone: 'AMMAN NAGAR HQ ZONE',
-      address: 'NO 228/1, AMMAN NAGAR, RAKKIYAPALAYAM, AVINASHI, TIRUPUR - 641 654',
-      dial: '+91 96552 37104',
-      email: 'vaarahitpt',
+      id: 'natrampalli-hq',
+      label: 'NATRAMPALLI (HQ)',
+      name: 'NATRAMPALLI HEAD OFFICE',
+      zone: 'AGRAHARAM HQ ZONE',
+      address: '4/252, VEDIVATTAM, AGRAHARAM VILL AND PO, NATRAMPALLI TK, TIRUPATTUR DT. 635651',
+      dial: '+91 95667 38884',
+      email: 'lithintransports',
       badge1: 'CENTRAL OPERATIONS COMMAND',
       badge2: '150 ALLOCATED LORRIES',
-      mapQuery: 'Rakkiyapalayam,Tirupur'
+      mapQuery: 'Natrampalli,Tirupattur'
     },
     {
       id: 'vavipalayam',
-      label: 'TIRUPUR (VAVIPALAYAM)',
-      name: 'VAVIPALAYAM OFFICE',
+      label: 'TIRUPUR',
+      name: 'TIRUPUR OFFICE',
       zone: 'RING ROAD LOGISTICS ZONE',
       address: 'NO 384/4, NETTIPATTAN KUTTAI, VAVIPALAYAM RING ROAD, TIRUPUR - 641 666',
-      dial: '+91 96552 35088',
-      email: 'vaarahitpt104',
+      dial: '+91 95667 38884',
+      email: 'lithintransports',
       badge1: 'TRANSIT & CARGO ROUTING',
       badge2: '85 ALLOCATED LORRIES',
       mapQuery: 'Vavipalayam,Tirupur'
@@ -42,8 +42,8 @@ export default function LandingPage({ onNavigate }) {
       name: 'CHENNAI OFFICE',
       zone: 'PORT LOGISTICS HUB',
       address: 'NO 45, G.N.T. ROAD, MADHAVARAM, CHENNAI - 600 110',
-      dial: '+91 9655235088',
-      email: 'vaarahimsn',
+      dial: '+91 95667 38884',
+      email: 'lithintransports',
       badge1: 'METRO CONSIGNMENT CENTER',
       badge2: '95 ALLOCATED LORRIES',
       mapQuery: 'Madhavaram,Chennai'
@@ -54,8 +54,8 @@ export default function LandingPage({ onNavigate }) {
       name: 'COIMBATORE OFFICE',
       zone: 'WESTERN ZONE LOGISTICS GATEWAY',
       address: 'NO 112, LORRY STAND ROAD, UKKADAM, COIMBATORE - 641 001',
-      dial: '+91 96552 37104',
-      email: 'vaarahicbe',
+      dial: '+91 95667 38884',
+      email: 'lithintransports',
       badge1: 'REGIONAL DEPOT COMMAND',
       badge2: '70 ALLOCATED LORRIES',
       mapQuery: 'Ukkadam,Coimbatore'
@@ -67,7 +67,7 @@ export default function LandingPage({ onNavigate }) {
       zone: 'SOUTHERN TECH-INDUSTRIAL ZONE',
       address: 'NO 14 3RD CROSS, ERAPPA REDDY CHIKKA BANASWADI, BANGALORE - 560 043',
       dial: '+91 95667 38884',
-      email: 'vaarahiblr',
+      email: 'lithintransports',
       badge1: 'PREMIUM INTERSTATE HUB GATEWAY',
       badge2: '110 ALLOCATED LORRIES',
       mapQuery: 'Banaswadi,Bangalore'
