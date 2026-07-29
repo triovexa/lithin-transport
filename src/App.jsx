@@ -47,31 +47,44 @@ function App() {
 
      
       {page !== 'dashboard' && (
-        <header className="navbar">
+        <header className="navbar" style={{
+          background: 'linear-gradient(135deg, rgba(225, 250, 254, 0.85) 0%, rgba(200, 245, 252, 0.6) 100%)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(0, 180, 216, 0.15)',
+          padding: '0.85rem 3rem'
+        }}>
           <div className="logo-container" onClick={() => setPage('home')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
             <div style={{
-              width: '64px',
-              height: '64px',
+              width: '54px',
+              height: '54px',
               borderRadius: '50%',
               backgroundColor: '#FFFFFF',
-              border: '2px solid rgba(255, 255, 255, 0.9)',
-              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.1)',
+              border: '2px solid rgba(255, 255, 255, 0.95)',
+              boxShadow: '0 4px 12px rgba(0, 180, 216, 0.15)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               overflow: 'hidden',
               padding: '2px'
             }}>
-              <img src="/logo.png" alt="SVAT Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              <img src="/logo.png" alt="Lithin Transport Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
           </div>
 
-          <ul className="nav-links">
+          <ul className="nav-links" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             <li>
               <button
                 onClick={() => setPage('home')}
-                className={`sidebar-link ${page === 'home' ? 'active' : ''}`}
-                style={{ background: 'none', border: 'none', padding: 0, fontWeight: 500, fontSize: '0.95rem' }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#007A93',
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  padding: '0.4rem 0.8rem'
+                }}
               >
                 Home
               </button>
@@ -84,8 +97,25 @@ function App() {
                 Dashboard
               </button>
             ) : (
-              <button className="btn-outline" onClick={() => setPage('login')} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Lock size={14} />
+              <button 
+                onClick={() => setPage('login')} 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  background: '#FFFFFF',
+                  color: '#00A8C6',
+                  border: '1.5px solid rgba(0, 168, 198, 0.3)',
+                  borderRadius: '50px',
+                  padding: '0.55rem 1.25rem',
+                  fontWeight: 700,
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 15px rgba(0, 180, 216, 0.12)',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                <Lock size={15} />
                 Client Login
               </button>
             )}

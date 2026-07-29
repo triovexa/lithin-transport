@@ -35,7 +35,7 @@ export default function LoginPage({ onLoginSuccess }) {
       {/* Top Left Brand Indicator */}
       <div className="login-left-brand">
         <div className="login-brand-dot"></div>
-        <span>SVAT Transport AI</span>
+        <span>Lithin Transport</span>
       </div>
 
       {/* Center Member Login Box */}
@@ -95,10 +95,6 @@ export default function LoginPage({ onLoginSuccess }) {
             LOGIN NOW!
           </button>
         </form>
-
-        <div className="login-footer-text">
-          Don't have an account? <span className="request-access-link">Request Access</span>
-        </div>
       </div>
     </div>
   );

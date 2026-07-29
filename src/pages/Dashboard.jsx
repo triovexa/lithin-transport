@@ -1062,59 +1062,55 @@ export default function Dashboard({ onLogout }) {
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div>
-            <div className="dashboard-header">
-              <h2 className="dashboard-title">Dashboard Overview</h2>
+            <div className="dashboard-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 className="dashboard-title" style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-dark)' }}>Dashboard Overview</h2>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>Real-time logistics, invoicing analytics & business operational metrics</p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0, 180, 216, 0.1)', padding: '0.4rem 0.9rem', borderRadius: '50px', border: '1px solid rgba(0, 180, 216, 0.2)' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block' }}></span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-dark)' }}>Live Sync Active</span>
+              </div>
             </div>
 
-            <div className="overview-grid">
+            {/* 4 Clean Stat Cards Without Icon Badges */}
+            <div className="overview-grid" style={{ marginBottom: '2rem' }}>
               {/* Card 1: Total Invoiced */}
               <div className="overview-card">
                 <div className="overview-card-info">
                   <p className="overview-card-label">Total Invoiced</p>
-                  <p className="overview-card-value">₹{(invoices.reduce((a, b) => a + b.amount, 0)).toLocaleString()}</p>
-                </div>
-                <div className="overview-card-icon">
-                  <IndianRupee size={24} />
+                  <p className="overview-card-value">₹{(invoices.reduce((a, b) => a + Number(b.amount || 0), 0)).toLocaleString()}</p>
                 </div>
               </div>
 
-              {/* Card 2: Invoices Count */}
+              {/* Card 2: Invoices Issued */}
               <div className="overview-card">
                 <div className="overview-card-info">
-                  <p className="overview-card-label">Invoices Count</p>
+                  <p className="overview-card-label">Invoices Issued</p>
                   <p className="overview-card-value">{invoices.length}</p>
                 </div>
-                <div className="overview-card-icon">
-                  <FileText size={24} />
-                </div>
               </div>
 
-              {/* Card 3: Lorry Receipts Count */}
+              {/* Card 3: Lorry Receipts (LR) */}
               <div className="overview-card">
                 <div className="overview-card-info">
-                  <p className="overview-card-label">Lorry Receipts</p>
+                  <p className="overview-card-label">Lorry Receipts (LR)</p>
                   <p className="overview-card-value">{savedLrs.length}</p>
                 </div>
-                <div className="overview-card-icon">
-                  <Truck size={24} />
-                </div>
               </div>
 
-              {/* Card 4: Quotations Count */}
+              {/* Card 4: Quotations Generated */}
               <div className="overview-card">
                 <div className="overview-card-info">
-                  <p className="overview-card-label">Quotations Count</p>
+                  <p className="overview-card-label">Quotations Generated</p>
                   <p className="overview-card-value">{savedQuotations.length}</p>
-                </div>
-                <div className="overview-card-icon">
-                  <FileText size={24} />
                 </div>
               </div>
             </div>
 
-            {/* Quick Actions (Rendered Second) */}
-            <div className="overview-card" style={{ display: 'block', textAlign: 'left', padding: '2rem', marginBottom: '2.5rem' }}>
-              <h3 style={{ marginBottom: '1.5rem', fontWeight: 700, color: 'var(--text-dark)', letterSpacing: '0.5px' }}>Quick Actions</h3>
+            {/* Quick Action Shortcuts */}
+            <div className="overview-card" style={{ display: 'block', textAlign: 'left', padding: '1.75rem 2rem', marginBottom: '2rem' }}>
+              <h3 style={{ marginBottom: '1.25rem', fontWeight: 700, color: 'var(--text-dark)', fontSize: '1.1rem', letterSpacing: '0.5px' }}>Quick Operations</h3>
               <div className="quick-actions-row">
                 <button className="btn-primary" onClick={() => { handleClearForm(); setActiveTab('creator'); }}>
                   <Plus size={18} /> Create Invoice
@@ -1126,49 +1122,97 @@ export default function Dashboard({ onLogout }) {
                   <Plus size={18} /> Create Quotation
                 </button>
                 <button className="btn-outline" onClick={() => setActiveTab('history')}>
-                  <History size={18} /> View History
+                  <History size={18} /> View History Registry
                 </button>
               </div>
             </div>
 
-            {/* Unique Interactive Glassy Charts (Rendered Last) */}
-            <div className="dashboard-charts-grid">
-              {/* Chart 1: Revenue Trends */}
-              <div className="overview-card" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '1.75rem' }}>
+            {/* Advanced Interactive Analytics Section */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem', marginBottom: '2.5rem' }}>
+              
+              {/* Chart 1: Advanced Revenue Scale & Monthly Freight Volume Graph */}
+              <div className="overview-card" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '1.75rem', position: 'relative' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-dark)' }}>Revenue Trend</h3>
+                  <div>
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-dark)' }}>Revenue & Dispatch Analytics</h3>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>Consolidated monthly freight movement vs total billing (₹)</p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', fontSize: '0.75rem' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dark)', fontWeight: 700 }}>
+                      <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#00B4D8', boxShadow: '0 0 8px rgba(0, 180, 216, 0.6)' }}></span> Revenue (₹)
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontWeight: 700 }}>
+                      <span style={{ width: '10px', height: '10px', borderRadius: '3px', backgroundColor: 'rgba(6, 182, 212, 0.25)' }}></span> Volume
+                    </span>
+                  </div>
                 </div>
-                <div style={{ position: 'relative', width: '100%', height: '220px' }}>
-                  <svg viewBox="0 0 500 220" width="100%" height="100%">
+
+                <div style={{ position: 'relative', width: '100%', height: '250px' }}>
+                  <svg viewBox="0 0 520 230" width="100%" height="100%">
                     <defs>
-                      <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.4" />
-                        <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.0" />
+                      <linearGradient id="advAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#00B4D8" stopOpacity="0.45" />
+                        <stop offset="100%" stopColor="#00B4D8" stopOpacity="0.0" />
                       </linearGradient>
+                      <linearGradient id="advBarGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#06B6D4" stopOpacity="0.5" />
+                        <stop offset="100%" stopColor="#06B6D4" stopOpacity="0.05" />
+                      </linearGradient>
+                      <filter id="glowCircle" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="3" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
                     </defs>
-                    {/* Gridlines */}
-                    <line x1="40" y1="30" x2="480" y2="30" stroke="rgba(0,0,0,0.04)" strokeDasharray="3,3" />
-                    <line x1="40" y1="80" x2="480" y2="80" stroke="rgba(0,0,0,0.04)" strokeDasharray="3,3" />
-                    <line x1="40" y1="130" x2="480" y2="130" stroke="rgba(0,0,0,0.04)" strokeDasharray="3,3" />
-                    <line x1="40" y1="180" x2="480" y2="180" stroke="rgba(0,0,0,0.06)" />
 
-                    {/* Area Path */}
-                    {areaPathD && <path d={areaPathD} fill="url(#areaGradient)" />}
+                    {/* Dotted Horizontal Gridlines & Y-Axis Scale */}
+                    <g fill="var(--text-muted)" fontSize="9" fontWeight="700" textAnchor="end">
+                      <text x="36" y="34">₹1.5L</text>
+                      <line x1="42" y1="30" x2="500" y2="30" stroke="rgba(0,180,216,0.12)" strokeDasharray="4,4" />
 
-                    {/* Line Path */}
-                    {linePathD && <path d={linePathD} fill="none" stroke="var(--primary)" strokeWidth="3" strokeLinecap="round" />}
+                      <text x="36" y="84">₹1.0L</text>
+                      <line x1="42" y1="80" x2="500" y2="80" stroke="rgba(0,180,216,0.12)" strokeDasharray="4,4" />
 
-                    {/* Glowing Path Points */}
+                      <text x="36" y="134">₹50K</text>
+                      <line x1="42" y1="130" x2="500" y2="130" stroke="rgba(0,180,216,0.12)" strokeDasharray="4,4" />
+
+                      <text x="36" y="184">₹0</text>
+                      <line x1="42" y1="180" x2="500" y2="180" stroke="rgba(0,180,216,0.3)" strokeWidth="1.5" />
+                    </g>
+
+                    {/* Gradient Volume Columns */}
+                    {chartDataPoints.map((pt, idx) => {
+                      const barH = Math.max(12, 180 - pt.y);
+                      return (
+                        <rect
+                          key={`adv-bar-${idx}`}
+                          x={pt.x - 11}
+                          y={pt.y}
+                          width="22"
+                          height={barH}
+                          rx="5"
+                          fill="url(#advBarGrad)"
+                        />
+                      );
+                    })}
+
+                    {/* Gradient Area Fill */}
+                    {areaPathD && <path d={areaPathD} fill="url(#advAreaGrad)" />}
+
+                    {/* Primary Smooth Curve Line */}
+                    {linePathD && <path d={linePathD} fill="none" stroke="#00A8C6" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />}
+
+                    {/* Interactive Glowing Rings */}
                     {chartDataPoints.map((pt, idx) => (
-                      <g key={idx}>
-                        <circle cx={pt.x} cy={pt.y} r="5" fill="#FFFFFF" stroke="var(--primary)" strokeWidth="2.5" />
-                        <title>{`Amount: ₹${pt.amount.toLocaleString()}`}</title>
+                      <g key={`adv-pt-${idx}`}>
+                        <circle cx={pt.x} cy={pt.y} r="7" fill="#FFFFFF" stroke="#00A8C6" strokeWidth="3" filter="url(#glowCircle)" />
+                        <circle cx={pt.x} cy={pt.y} r="3" fill="#00A8C6" />
+                        <title>{`${pt.label}: ₹${pt.amount.toLocaleString()} Revenue`}</title>
                       </g>
                     ))}
 
-                    {/* Axis Labels */}
+                    {/* X-Axis Month Labels */}
                     {chartDataPoints.map((pt, idx) => (
-                      <text key={idx} x={pt.x} y="200" fill="var(--text-muted)" fontSize="9" textAnchor="middle" fontWeight="600">
+                      <text key={`adv-lbl-${idx}`} x={pt.x} y="204" fill="var(--text-muted)" fontSize="9.5" textAnchor="middle" fontWeight="700">
                         {pt.label}
                       </text>
                     ))}
@@ -1176,55 +1220,108 @@ export default function Dashboard({ onLogout }) {
                 </div>
               </div>
 
-              {/* Chart 2: Cargo Distribution */}
-              <div className="overview-card" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '1.75rem' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-dark)', marginBottom: '1.5rem', textAlign: 'left' }}>Database Split</h3>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: '1rem', height: '220px' }}>
-                  <div style={{ position: 'relative', width: '130px', height: '130px' }}>
-                    <svg width="100%" height="100%" viewBox="0 0 120 120">
-                      {/* Background track circle */}
-                      <circle cx="60" cy="60" r="50" fill="transparent" stroke="rgba(0,0,0,0.03)" strokeWidth="12" />
-
-                      {/* Segments */}
-                      {donutSegments.map((segment, idx) => (
-                        segment.pct > 0 && (
-                          <circle
-                            key={idx}
-                            cx="60"
-                            cy="60"
-                            r="50"
-                            fill="transparent"
-                            stroke={segment.color}
-                            strokeWidth="12"
-                            strokeDasharray={segment.dasharray}
-                            strokeDashoffset={segment.offset}
-                            strokeLinecap="round"
-                            transform="rotate(-90 60 60)"
-                          />
-                        )
-                      ))}
-                    </svg>
-                    {/* Center percentage indicator */}
-                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                      <span style={{ color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', fontSize: '0.6rem', fontWeight: 600 }}>Total</span>
-                      <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-dark)', lineHeight: '1' }}>
-                        {invoices.length + savedLrs.length + savedQuotations.length}
-                      </span>
-                    </div>
+              {/* Advanced Analytics Column */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                
+                {/* Chart 2: Database Distribution Radial Donut */}
+                <div className="overview-card" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '1.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-dark)' }}>Database Records Split</h3>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#00A8C6', background: 'rgba(0, 180, 216, 0.1)', padding: '2px 8px', borderRadius: '12px' }}>Live Split</span>
                   </div>
-
-                  {/* Legend list */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left', minWidth: '100px' }}>
-                    {donutSegments.map((segment, idx) => (
-                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem' }}>
-                        <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: segment.color, display: 'inline-block' }}></span>
-                        <span style={{ fontWeight: 600, color: 'var(--text-dark)' }}>
-                          {segment.label} ({segment.pct}%)
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: '1.25rem' }}>
+                    <div style={{ position: 'relative', width: '125px', height: '125px', flexShrink: 0 }}>
+                      <svg width="100%" height="100%" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="48" fill="transparent" stroke="rgba(0, 180, 216, 0.08)" strokeWidth="14" />
+                        {donutSegments.map((segment, idx) => (
+                          segment.pct > 0 && (
+                            <circle
+                              key={`adv-donut-${idx}`}
+                              cx="60"
+                              cy="60"
+                              r="48"
+                              fill="transparent"
+                              stroke={segment.color}
+                              strokeWidth="14"
+                              strokeDasharray={segment.dasharray}
+                              strokeDashoffset={segment.offset}
+                              strokeLinecap="round"
+                              transform="rotate(-90 60 60)"
+                            />
+                          )
+                        ))}
+                      </svg>
+                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                        <span style={{ color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', fontSize: '0.55rem', fontWeight: 700 }}>Total Docs</span>
+                        <span style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-dark)', lineHeight: '1' }}>
+                          {invoices.length + savedLrs.length + savedQuotations.length}
                         </span>
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Donut Segment Legend with Progress Indicators */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left', flex: 1 }}>
+                      {donutSegments.map((segment, idx) => (
+                        <div key={`adv-legend-${idx}`} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                            <span style={{ fontWeight: 600, color: 'var(--text-dark)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: segment.color, display: 'inline-block' }}></span>
+                              {segment.label}
+                            </span>
+                            <strong style={{ color: segment.color, fontWeight: 800 }}>{segment.pct}%</strong>
+                          </div>
+                          <div style={{ width: '100%', height: '4px', backgroundColor: 'rgba(0, 180, 216, 0.08)', borderRadius: '2px', overflow: 'hidden' }}>
+                            <div style={{ width: `${segment.pct}%`, height: '100%', backgroundColor: segment.color, borderRadius: '2px' }}></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
+
+                {/* Chart 3: Modern Operational Performance Progress Matrix */}
+                <div className="overview-card" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '1.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-dark)' }}>Operational Performance Matrix</h3>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#10B981', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '12px' }}>Health 99%</span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {/* Item 1: Paid Invoices */}
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--text-dark)' }}>Paid Invoices & Billing Settlement</span>
+                        <span style={{ fontWeight: 800, color: '#10B981' }}>75% Settled</span>
+                      </div>
+                      <div style={{ width: '100%', height: '7px', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: '75%', height: '100%', backgroundColor: '#10B981', borderRadius: '4px' }}></div>
+                      </div>
+                    </div>
+
+                    {/* Item 2: Pending Bills */}
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--text-dark)' }}>Pending Payment Verification</span>
+                        <span style={{ fontWeight: 800, color: '#F59E0B' }}>15% Pending</span>
+                      </div>
+                      <div style={{ width: '100%', height: '7px', backgroundColor: 'rgba(245, 158, 11, 0.12)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: '15%', height: '100%', backgroundColor: '#F59E0B', borderRadius: '4px' }}></div>
+                      </div>
+                    </div>
+
+                    {/* Item 3: Active Fleet Transit */}
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--text-dark)' }}>Active Fleet Freight Transit</span>
+                        <span style={{ fontWeight: 800, color: '#00B4D8' }}>10% Active</span>
+                      </div>
+                      <div style={{ width: '100%', height: '7px', backgroundColor: 'rgba(0, 180, 216, 0.12)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: '10%', height: '100%', backgroundColor: '#00B4D8', borderRadius: '4px' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
