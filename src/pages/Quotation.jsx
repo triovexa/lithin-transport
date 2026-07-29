@@ -444,7 +444,7 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
           {/* Logo container with TM (No border) */}
           <div style={{ position: 'relative', display: 'inline-block', marginRight: '20px' }}>
             <div style={{ padding: '0', width: '80px', height: '80px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <img src="/logo.png" alt="SVAT Logo" style={{ width: '76px', height: '76px', objectFit: 'contain' }} />
+              <img src="/logo.png" alt="LT Logo" style={{ width: '76px', height: '76px', objectFit: 'contain' }} />
             </div>
             <span style={{ 
               position: 'absolute', 
@@ -458,7 +458,7 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
           </div>
           <div style={{ flex: 1, textAlign: 'center', marginRight: '80px' }}>
             <h1 style={{ fontSize: '20px', fontWeight: 'bold', textDecoration: 'underline', margin: '0 0 4px 0' }}>
-              SREE VAARAHI AMMAN TRANSPORTS
+              LITHIN TRANSPORT
             </h1>
             <h2 style={{ fontSize: '13px', fontWeight: 'bold', textDecoration: 'underline', margin: '0 0 8px 0' }}>
               EXPERT IN EXPORT CARGO MOVERS
@@ -470,10 +470,10 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
               4/252, Vedivattam, Agraharam vill and po, Natrampalli TK, Tirupattur DT. 635651
             </p>
             <p style={{ fontSize: '12px', fontWeight: 'bold', margin: '0 0 4px 0' }}>
-              Contact: +91 95667 38884
+              Contact: +91 95667 38884, +91 93423 17996
             </p>
             <p style={{ fontSize: '11px', margin: '0' }}>
-              Mail Id : <a href="mailto:lithintransports@gmail.com" style={{ color: 'blue', textDecoration: 'underline' }}>lithintransports@gmail.com</a> , Website : <a href="http://www.lithintransport.com" style={{ color: 'black', textDecoration: 'none' }}>www.lithintransport.com</a>
+              Mail Id : <a href="mailto:lithintransports@gmail.com" style={{ color: 'blue', textDecoration: 'underline' }}>lithintransports@gmail.com</a> , Website : <a href="https://www.lithintransport.in" style={{ color: 'black', textDecoration: 'none' }}>www.lithintransport.in</a>
             </p>
           </div>
         </div>
@@ -742,7 +742,7 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
           Save Quotation
         </button>
         <button 
-          onClick={() => handleDownloadPDF('quotation-content', 'SVAT_Rate_Quotation.pdf')} 
+          onClick={() => handleDownloadPDF('quotation-content', 'LT_Rate_Quotation.pdf')} 
           className="btn-primary"
           style={{ 
             padding: '12px 24px', 
@@ -768,8 +768,8 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '40px', borderBottom: '1px solid #000', paddingBottom: '20px' }}>
               <div style={{ position: 'relative', display: 'inline-block', marginRight: '30px' }}>
                 <div style={{ padding: '0', width: '120px', height: '120px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                  <img src="/logo.png" alt="SVAT Logo" style={{ width: '110px', height: '110px', objectFit: 'contain' }} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
-                  <span style={{ display: 'none', fontWeight: 'bold', textAlign: 'center', fontSize: '18px' }}>Logo<br/>SVAT</span>
+                  <img src="/logo.png" alt="LT Logo" style={{ width: '110px', height: '110px', objectFit: 'contain' }} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+                  <span style={{ display: 'none', fontWeight: 'bold', textAlign: 'center', fontSize: '18px' }}>Logo<br/>LT</span>
                 </div>
                 <span style={{ 
                   position: 'absolute', 
@@ -782,11 +782,11 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
                 }}>TM</span>
               </div>
               <div>
-                <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 4px 0', textTransform: 'uppercase' }}>SREE VAARAHI AMMAN Transports</h1>
+                <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 4px 0', textTransform: 'uppercase' }}>LITHIN TRANSPORT</h1>
                 <h2 style={{ fontSize: '14px', fontWeight: 'bold', textDecoration: 'underline', margin: '0 0 8px 0' }}>EXPERT IN DOMESTIC CARGO MOVERS</h2>
                 <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>Address:</strong> 4/252, Vedivattam, Agraharam vill and po, Natrampalli TK, Tirupattur DT. 635651</p>
-                <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>Contact:</strong> +91 95667 38884</p>
-                <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>www:</strong> www.lithintransport.com</p>
+                <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>Contact:</strong> +91 95667 38884, +91 93423 17996</p>
+                <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>www:</strong> www.lithintransport.in</p>
                 <p style={{ margin: '0', fontSize: '14px' }}><strong>mail:</strong> lithintransports@gmail.com</p>
               </div>
             </div>
@@ -935,7 +935,7 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
               Save Quotation
             </button>
             <button 
-              onClick={() => handleDownloadPDF('domestic-quotation-content', 'SVAT_Domestic_Quotation.pdf')} 
+              onClick={() => handleDownloadPDF('domestic-quotation-content', 'LT_Domestic_Quotation.pdf')} 
               className="btn-primary"
               style={{ 
                 padding: '12px 24px', 

@@ -6,9 +6,9 @@ export default function LandingPage({ onNavigate }) {
 
   // Exactly 3 AI-generated premium horizontal logistics truck slides
   const slides = [
-    { src: '/slider_truck_one.png', alt: 'SVAT Transport Fleet 1' },
-    { src: '/slider_truck_two.png', alt: 'SVAT Cargo Logistics 2' },
-    { src: '/slider_truck_three.png', alt: 'SVAT Freight Supply 3' }
+    { src: '/slider_truck_one.png', alt: 'LT Transport Fleet 1' },
+    { src: '/slider_truck_two.png', alt: 'LT Cargo Logistics 2' },
+    { src: '/slider_truck_three.png', alt: 'LT Freight Supply 3' }
   ];
 
   const branches = [

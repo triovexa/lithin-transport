@@ -6,10 +6,10 @@ import Dashboard from './pages/Dashboard';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem('svat_is_logged_in') === 'true';
+    return (localStorage.getItem('lt_is_logged_in') || localStorage.getItem('svat_is_logged_in')) === 'true';
   });
   const [page, setPage] = useState(() => {
-    const loggedIn = localStorage.getItem('svat_is_logged_in') === 'true';
+    const loggedIn = (localStorage.getItem('lt_is_logged_in') || localStorage.getItem('svat_is_logged_in')) === 'true';
     return loggedIn ? 'dashboard' : 'home';
   });
 
@@ -26,12 +26,13 @@ function App() {
 
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
-    localStorage.setItem('svat_is_logged_in', 'true');
+    localStorage.setItem('lt_is_logged_in', 'true');
     setPage('dashboard');
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+    localStorage.removeItem('lt_is_logged_in');
     localStorage.removeItem('svat_is_logged_in');
     setPage('home');
   };
@@ -62,7 +63,7 @@ function App() {
               overflow: 'hidden',
               padding: '2px'
             }}>
-              <img src="/logo.png" alt="SVAT Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              <img src="/logo.png" alt="LT Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
           </div>
 
@@ -116,11 +117,11 @@ function App() {
                 overflow: 'hidden',
                 padding: '2px'
               }}>
-                <img src="/logo.png" alt="SVAT Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                <img src="/logo.png" alt="LT Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
             </div>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-              © {new Date().getFullYear()} Sree Vaarahi Amman Transports.<br />All rights reserved.
+              © {new Date().getFullYear()} Lithin Transport.<br />All rights reserved.
             </p>
           </div>
           <div>
@@ -134,9 +135,9 @@ function App() {
           <div>
             <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-dark)', marginBottom: '1rem' }}>Contact Info</h4>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.6', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <span><strong>Phone:</strong> +91 95667 38884</span>
+              <span><strong>Phone:</strong> +91 95667 38884, +91 93423 17996</span>
               <span><strong>Email:</strong> lithintransports@gmail.com</span>
-              <span><strong>Website:</strong> www.lithintransport.com</span>
+              <span><strong>Website:</strong> www.lithintransport.in</span>
             </p>
           </div>
         </footer>

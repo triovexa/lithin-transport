@@ -9,7 +9,7 @@ export default function LoginPage({ onLoginSuccess }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (username.trim().toLowerCase() === 'lithintransports' && password === 'Lithintransports@984') {
+    if (username.trim().toLowerCase() === 'lithintransport' && password === 'Lithintransport@884') {
       setError('');
       onLoginSuccess();
     } else {
@@ -34,7 +34,7 @@ export default function LoginPage({ onLoginSuccess }) {
             overflow: 'hidden',
             padding: '8px'
           }}>
-            <img src="/logo.png" alt="SVAT Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <img src="/logo.png" alt="LT Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
         </div>
 
@@ -45,9 +45,9 @@ export default function LoginPage({ onLoginSuccess }) {
             <label className="login-label">Username</label>
             <div className="input-icon-wrapper">
               <User className="login-input-icon" />
-              <input 
-                type="text" 
-                className="login-input" 
+              <input
+                type="text"
+                className="login-input"
                 placeholder="Enter username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -60,9 +60,9 @@ export default function LoginPage({ onLoginSuccess }) {
             <label className="login-label">Password</label>
             <div className="input-icon-wrapper" style={{ position: 'relative' }}>
               <Lock className="login-input-icon" />
-              <input 
-                type={showPassword ? "text" : "password"} 
-                className="login-input" 
+              <input
+                type={showPassword ? "text" : "password"}
+                className="login-input"
                 placeholder="Enter password"
                 style={{ paddingRight: '40px' }}
                 value={password}
@@ -91,7 +91,6 @@ export default function LoginPage({ onLoginSuccess }) {
               </button>
             </div>
           </div>
-
           <button type="submit" className="btn-primary login-btn">
             Sign In
             <ArrowRight size={16} />
