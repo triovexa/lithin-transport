@@ -1576,7 +1576,7 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                             {/* Logo Box */}
                             <div style={{ width: '8%', borderRight: '2px solid #08103A', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2px' }}>
                               <div style={{ position: 'relative', display: 'inline-block' }}>
-                                <img src="/logo2.png" alt="Logo" style={{ width: '56px', height: '56px', objectFit: 'contain' }} />
+                                <img src="/logo.png" alt="Logo" style={{ width: '70px', height: '56px', objectFit: 'contain' }} />
                                 <span style={{
                                   position: 'absolute',
                                   top: '1px',
