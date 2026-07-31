@@ -193,6 +193,39 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
     return `${yyyy}-${mm}-${dd}`;
   });
 
+  const quotationContainerRef = useRef(null);
+  const [quotationScale, setQuotationScale] = useState(1);
+  const quotationCardRef = useRef(null);
+  const [cardHeight, setCardHeight] = useState(900);
+
+  useEffect(() => {
+    const updateScale = () => {
+      if (quotationContainerRef.current) {
+        const availableWidth = quotationContainerRef.current.clientWidth;
+        const isMobile = window.innerWidth <= 768;
+        const calcScale = (availableWidth - 16) / 800;
+        const targetScale = isMobile ? Math.max(0.85, calcScale) : (calcScale < 1 ? calcScale : 1);
+        setQuotationScale(targetScale);
+      }
+    };
+
+    updateScale();
+    setTimeout(updateScale, 100);
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
+
+  useEffect(() => {
+    if (!quotationCardRef.current) return;
+    const observer = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        setCardHeight(Math.round(entry.contentRect.height));
+      }
+    });
+    observer.observe(quotationCardRef.current);
+    return () => observer.disconnect();
+  }, [type]);
+
   const [suggestionsRegistry, setSuggestionsRegistry] = useState(() => {
     const saved = localStorage.getItem('svat_suggestions_registry');
     return saved ? JSON.parse(saved) : {
@@ -394,30 +427,49 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
     const element = document.getElementById(contentId);
     if (!element) return;
     
-    const textareas = element.querySelectorAll('.pdf-textarea');
-    textareas.forEach(ta => {
-      ta.style.border = 'none';
-    });
+    // Create an offscreen container clone for PDF generation
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'fixed';
+    tempContainer.style.left = '-9999px';
+    tempContainer.style.top = '0';
+    tempContainer.style.width = '800px';
+    tempContainer.style.zIndex = '-9999';
+    tempContainer.style.backgroundColor = '#ffffff';
+
+    const clone = element.cloneNode(true);
+    clone.style.transform = 'none';
+    clone.style.width = '800px';
+    clone.style.margin = '0';
+    clone.style.boxSizing = 'border-box';
+
+    const textareas = clone.querySelectorAll('.pdf-textarea');
+    textareas.forEach(ta => { ta.style.border = 'none'; });
     
-    const dateInputs = element.querySelectorAll('.pdf-date-input');
-    const dateTexts = element.querySelectorAll('.pdf-date-text');
+    const dateInputs = clone.querySelectorAll('.pdf-date-input');
+    const dateTexts = clone.querySelectorAll('.pdf-date-text');
     dateInputs.forEach(input => input.style.display = 'none');
     dateTexts.forEach(text => text.style.display = 'inline');
     
+    tempContainer.appendChild(clone);
+    document.body.appendChild(tempContainer);
+
     const opt = {
       margin:       0.2,
       filename:     filename,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 3.5, useCORS: true, logging: false },
+      html2canvas:  { scale: 3, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
     };
     
-    window.html2pdf().set(opt).from(element).save().then(() => {
-      textareas.forEach(ta => {
-        ta.style.border = '1px dashed #ccc';
-      });
-      dateInputs.forEach(input => input.style.display = 'inline');
-      dateTexts.forEach(text => text.style.display = 'none');
+    window.html2pdf().set(opt).from(clone).save().then(() => {
+      if (document.body.contains(tempContainer)) {
+        document.body.removeChild(tempContainer);
+      }
+    }).catch(err => {
+      console.error("PDF generation error:", err);
+      if (document.body.contains(tempContainer)) {
+        document.body.removeChild(tempContainer);
+      }
     });
   };
 
@@ -444,8 +496,24 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
       
       {type === 'export' ? (
         <>
-          {/* Container for the Quotation Content - This gets converted to PDF */}
-          <div id="quotation-content" style={{ backgroundColor: '#fff', color: '#000', padding: '20px 30px', fontFamily: '"Times New Roman", Times, serif', width: '100%', maxWidth: '800px', border: '1px solid #ccc', boxShadow: '0 0 10px rgba(0,0,0,0.1)' }}>
+          {/* Responsive Container with scale wrapper for Quotation Content */}
+          <div className="quotation-preview-container" ref={quotationContainerRef} style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <div style={{
+              width: `${800 * quotationScale}px`,
+              height: `${cardHeight * quotationScale}px`,
+              position: 'relative',
+              margin: '0 auto'
+            }}>
+              <div id="quotation-scale-wrapper" style={{
+                transform: `scale(${quotationScale})`,
+                transformOrigin: 'top left',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '800px',
+                height: `${cardHeight}px`
+              }}>
+                <div id="quotation-content" ref={quotationCardRef} style={{ backgroundColor: '#fff', color: '#000', padding: '20px 30px', fontFamily: '"Times New Roman", Times, serif', width: '800px', border: '1px solid #ccc', boxShadow: '0 0 10px rgba(0,0,0,0.1)', boxSizing: 'border-box' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px', borderBottom: '1px solid #000', paddingBottom: '10px', position: 'relative' }}>
           {/* Logo container with TM (No border) */}
@@ -727,10 +795,13 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
             This Price Is Valid for Present Fuel Price; Festival & Lockdown time Extra Charges.
           </p>
         </div>
+            </div>
+          </div>
+        </div>
       </div>
-      
-      {/* Download/Save Buttons Container */}
-      <div style={{ display: 'flex', gap: '15px', marginTop: '20px', marginBottom: '40px' }}>
+          
+          {/* Download/Save Buttons Container */}
+          <div className="quotation-actions-row" style={{ display: 'flex', gap: '15px', marginTop: '20px', marginBottom: '40px' }}>
         <button 
           onClick={handleSaveQuotation}
           className="btn-outline"
@@ -769,40 +840,57 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
         </>
       ) : (
         <>
-          <div id="domestic-quotation-content" style={{ backgroundColor: '#fff', color: '#000', padding: '40px 50px', fontFamily: '"Times New Roman", Times, serif', width: '100%', maxWidth: '800px', minHeight: '1050px', border: '1px solid #ccc', boxShadow: '0 0 10px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column' }}>
+          {/* Responsive Container with scale wrapper for Domestic Quotation Content */}
+          <div className="quotation-preview-container" ref={quotationContainerRef} style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <div style={{
+              width: `${800 * quotationScale}px`,
+              height: `${cardHeight * quotationScale}px`,
+              position: 'relative',
+              margin: '0 auto'
+            }}>
+              <div id="quotation-scale-wrapper" style={{
+                transform: `scale(${quotationScale})`,
+                transformOrigin: 'top left',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '800px',
+                height: `${cardHeight}px`
+              }}>
+                <div id="domestic-quotation-content" ref={quotationCardRef} style={{ backgroundColor: '#fff', color: '#000', padding: '25px 35px', fontFamily: '"Times New Roman", Times, serif', width: '800px', border: '1px solid #ccc', boxShadow: '0 0 10px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
             
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '40px', borderBottom: '1px solid #000', paddingBottom: '20px' }}>
-              <div style={{ position: 'relative', display: 'inline-block', marginRight: '30px' }}>
-                <div style={{ padding: '0', width: '120px', height: '120px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                  <img src="/logo.png" alt="LT Logo" style={{ width: '110px', height: '110px', objectFit: 'contain' }} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
-                  <span style={{ display: 'none', fontWeight: 'bold', textAlign: 'center', fontSize: '18px' }}>Logo<br/>LT</span>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #000', paddingBottom: '12px' }}>
+              <div style={{ position: 'relative', display: 'inline-block', marginRight: '20px' }}>
+                <div style={{ padding: '0', width: '90px', height: '90px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                  <img src="/logo.png" alt="LT Logo" style={{ width: '85px', height: '85px', objectFit: 'contain' }} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+                  <span style={{ display: 'none', fontWeight: 'bold', textAlign: 'center', fontSize: '16px' }}>Logo<br/>LT</span>
                 </div>
                 <span style={{ 
                   position: 'absolute', 
                   top: '0px', 
                   right: '0px', 
-                  fontSize: '0.8rem', 
+                  fontSize: '0.75rem', 
                   fontWeight: 'bold', 
                   color: '#000',
                   lineHeight: '1'
                 }}>TM</span>
               </div>
               <div>
-                <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 4px 0', textTransform: 'uppercase' }}>LITHIN TRANSPORT</h1>
-                <h2 style={{ fontSize: '14px', fontWeight: 'bold', textDecoration: 'underline', margin: '0 0 8px 0' }}>EXPERT IN DOMESTIC CARGO MOVERS</h2>
-                <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>Address:</strong> 4/252, Vedivattam, Agraharam vill and po, Natrampalli TK, Tirupattur DT. 635651</p>
-                <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>Contact:</strong> +91 95667 38884, +91 93423 17996</p>
-                <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>www:</strong> www.lithintransport.in</p>
-                <p style={{ margin: '0', fontSize: '14px' }}><strong>mail:</strong> lithintransports@gmail.com</p>
+                <h1 style={{ fontSize: '22px', fontWeight: 'bold', margin: '0 0 4px 0', textTransform: 'uppercase' }}>LITHIN TRANSPORT</h1>
+                <h2 style={{ fontSize: '13px', fontWeight: 'bold', textDecoration: 'underline', margin: '0 0 6px 0' }}>EXPERT IN DOMESTIC CARGO MOVERS</h2>
+                <p style={{ margin: '0 0 3px 0', fontSize: '13px' }}><strong>Address:</strong> 4/252, Vedivattam, Agraharam vill and po, Natrampalli TK, Tirupattur DT. 635651</p>
+                <p style={{ margin: '0 0 3px 0', fontSize: '13px' }}><strong>Contact:</strong> +91 95667 38884, +91 93423 17996</p>
+                <p style={{ margin: '0 0 3px 0', fontSize: '13px' }}><strong>www:</strong> www.lithintransport.in</p>
+                <p style={{ margin: '0', fontSize: '13px' }}><strong>mail:</strong> lithintransports@gmail.com</p>
               </div>
             </div>
 
             {/* Address & Date Flex Container */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '25px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
               {/* Address */}
-              <div style={{ textAlign: 'left', fontSize: '14px' }}>
-                <p style={{ fontWeight: 'bold', margin: '0 0 6px 0', fontSize: '16px', textAlign: 'left' }}>To,</p>
+              <div style={{ textAlign: 'left', fontSize: '13px' }}>
+                <p style={{ fontWeight: 'bold', margin: '0 0 4px 0', fontSize: '15px', textAlign: 'left' }}>To,</p>
                 <AutocompleteInlineTextarea
                   value={toAddress}
                   onChange={(e) => setToAddress(e.target.value)}
@@ -815,19 +903,19 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
                     background: 'transparent',
                     textAlign: 'left',
                     fontWeight: 'bold',
-                    fontSize: '14px',
+                    fontSize: '13px',
                     outline: 'none',
                     fontFamily: '"Times New Roman", Times, serif',
                     resize: 'none',
-                    padding: '6px'
+                    padding: '4px'
                   }}
                   className="pdf-textarea"
                 />
               </div>
               {/* Date Picker */}
-              <div style={{ textAlign: 'right', fontSize: '14px', paddingRight: '20px' }}>
-                <label style={{ fontWeight: 'bold', marginRight: '6px', fontSize: '16px' }}>Date:</label>
-                <span className="pdf-date-text" style={{ display: 'none', fontSize: '14px', fontWeight: 'bold' }}>
+              <div style={{ textAlign: 'right', fontSize: '13px', paddingRight: '15px' }}>
+                <label style={{ fontWeight: 'bold', marginRight: '6px', fontSize: '15px' }}>Date:</label>
+                <span className="pdf-date-text" style={{ display: 'none', fontSize: '13px', fontWeight: 'bold' }}>
                   {formatDate(quotationDate)}
                 </span>
                 <input
@@ -839,10 +927,10 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
                     background: 'transparent',
                     outline: 'none',
                     fontFamily: '"Times New Roman", Times, serif',
-                    fontSize: '14px',
+                    fontSize: '13px',
                     fontWeight: 'bold',
-                    padding: '6px',
-                    width: '140px'
+                    padding: '4px',
+                    width: '130px'
                   }}
                   className="pdf-textarea pdf-date-input"
                 />
@@ -850,35 +938,35 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
             </div>
 
             
-            <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '40px', fontSize: '18px', fontWeight: 'bold' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '20px', fontSize: '16px', fontWeight: 'bold' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span>From</span>
                 <AutocompleteInlineInput 
                   value={domesticLocation.from} 
                   onChange={(e) => setDomesticLocation({...domesticLocation, from: e.target.value})}
                   suggestions={suggestionsRegistry.cities}
-                  style={{ border: '1px solid #000', padding: '6px 12px', outline: 'none', width: '200px', fontFamily: '"Times New Roman", Times, serif', fontSize: '18px', fontWeight: 'bold' }} 
+                  style={{ border: '1px solid #000', padding: '4px 10px', outline: 'none', width: '180px', fontFamily: '"Times New Roman", Times, serif', fontSize: '16px', fontWeight: 'bold' }} 
                 />
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span>To</span>
                 <AutocompleteInlineInput 
                   value={domesticLocation.to} 
                   onChange={(e) => setDomesticLocation({...domesticLocation, to: e.target.value})}
                   suggestions={suggestionsRegistry.cities}
-                  style={{ border: '1px solid #000', padding: '6px 12px', outline: 'none', width: '200px', fontFamily: '"Times New Roman", Times, serif', fontSize: '18px', fontWeight: 'bold' }} 
+                  style={{ border: '1px solid #000', padding: '4px 10px', outline: 'none', width: '180px', fontFamily: '"Times New Roman", Times, serif', fontSize: '16px', fontWeight: 'bold' }} 
                 />
               </div>
             </div>
 
             
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 'auto', textAlign: 'center', fontSize: '16px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '15px', textAlign: 'center', fontSize: '14px' }}>
               <thead>
                 <tr>
-                  <th style={{ border: '1px solid #000', padding: '15px', fontWeight: 'bold', fontSize: '16px' }}>Container Size</th>
-                  <th style={{ border: '1px solid #000', padding: '15px', fontWeight: 'bold', fontSize: '16px' }}>Weight</th>
-                  <th style={{ border: '1px solid #000', padding: '15px', fontWeight: 'bold', fontSize: '16px' }}>Rates</th>
-                  <th style={{ border: '1px solid #000', padding: '15px', fontWeight: 'bold', fontSize: '16px' }}>Halting Charge</th>
+                  <th style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold', fontSize: '14px' }}>Container Size</th>
+                  <th style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold', fontSize: '14px' }}>Weight</th>
+                  <th style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold', fontSize: '14px' }}>Rates</th>
+                  <th style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold', fontSize: '14px' }}>Halting Charge</th>
                 </tr>
               </thead>
               <tbody>
@@ -892,38 +980,42 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
                   { size: '32 FT MXL', weight: '18 mt', rates: '62,000', halting: '2500' }
                 ].map((row, idx) => (
                   <tr key={idx}>
-                    <td style={{ border: '1px solid #000', padding: '15px', fontWeight: 'bold', textAlign: 'left', paddingLeft: '20px' }}>{row.size}</td>
-                    <td style={{ border: '1px solid #000', padding: '15px', fontWeight: 'bold' }}>{row.weight}</td>
+                    <td style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold', textAlign: 'left', paddingLeft: '15px' }}>{row.size}</td>
+                    <td style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold' }}>{row.weight}</td>
                     <td style={{ border: '1px solid #000', padding: '0', fontWeight: 'bold' }}>
                       <input 
                         type="text" 
                         value={domesticRates[idx]} 
                         onChange={(e) => handleDomesticRateChange(idx, e.target.value)} 
-                        style={{ ...inputStyle, padding: '15px 0', fontSize: '16px' }}
+                        style={{ ...inputStyle, padding: '8px 0', fontSize: '14px' }}
                         placeholder={row.rates}
                       />
                     </td>
-                    <td style={{ border: '1px solid #000', padding: '15px', fontWeight: 'bold' }}>{row.halting}</td>
+                    <td style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold' }}>{row.halting}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
             {/* Footer Notes */}
-            <div style={{ fontSize: '15px', lineHeight: '1.6', marginTop: '40px' }}>
-              <p style={{ fontWeight: 'bold', margin: '8px 0', fontSize: '16px', textDecoration: 'underline' }}>
+            <div style={{ fontSize: '13px', lineHeight: '1.5', marginTop: '15px' }}>
+              <p style={{ fontWeight: 'bold', margin: '4px 0', fontSize: '14px', textDecoration: 'underline' }}>
                 As per detailes in Export Quotation
               </p>
-              <p style={{ fontWeight: 'bold', margin: '8px 0', fontSize: '15px' }}>
+              <p style={{ fontWeight: 'bold', margin: '4px 0', fontSize: '13px' }}>
                 Urgent Load Consider as a Full Load Only Timing Load
               </p>
-              <p style={{ fontWeight: 'bold', margin: '8px 0', fontSize: '15px' }}>
+              <p style={{ fontWeight: 'bold', margin: '4px 0', fontSize: '13px' }}>
                 This Price Is Valid for Present Fuel Price; Festival & Lockdown time Extra Charges.
               </p>
             </div>
           </div>
           
-          <div style={{ display: 'flex', gap: '15px', marginTop: '20px', marginBottom: '40px' }}>
+          </div>
+            </div>
+          </div>
+          
+          <div className="quotation-actions-row" style={{ display: 'flex', gap: '15px', marginTop: '20px', marginBottom: '40px' }}>
             <button 
               onClick={handleSaveQuotation}
               className="btn-outline"

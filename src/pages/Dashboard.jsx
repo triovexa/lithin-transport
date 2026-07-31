@@ -301,10 +301,11 @@ export default function Dashboard({ onLogout }) {
   useEffect(() => {
     const updateScale = () => {
       if (previewContainerRef.current) {
-        // Calculate available width minus some padding
-        const availableWidth = previewContainerRef.current.clientWidth - 40;
-        const newScale = availableWidth / 794; // 794 is the invoice-preview-card width
-        setPreviewScale(newScale < 1 ? newScale : 1);
+        const availableWidth = previewContainerRef.current.clientWidth;
+        const isMobile = window.innerWidth <= 768;
+        const calcScale = (availableWidth - 16) / 794;
+        const targetScale = isMobile ? Math.max(0.85, calcScale) : (calcScale < 1 ? calcScale : 1);
+        setPreviewScale(targetScale);
       }
     };
 
@@ -714,22 +715,40 @@ export default function Dashboard({ onLogout }) {
     // Replace slashes with underscores for safe filename
     const filename = `${(formData.debitNoteNo || 'invoice').replace(/\//g, '_')}.pdf`;
 
+    // Create a clean offscreen container for PDF generation so live layout/scale is unaffected
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'fixed';
+    tempContainer.style.left = '-9999px';
+    tempContainer.style.top = '0';
+    tempContainer.style.width = '794px';
+    tempContainer.style.zIndex = '-9999';
+    tempContainer.style.backgroundColor = '#ffffff';
+
+    const clone = element.cloneNode(true);
+    clone.style.transform = 'none';
+    clone.style.width = '794px';
+    clone.style.margin = '0';
+    clone.style.boxSizing = 'border-box';
+
+    tempContainer.appendChild(clone);
+    document.body.appendChild(tempContainer);
+
     const opt = {
       margin: 0.15,
       filename: filename,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 3.5, useCORS: true, logging: false },
+      html2canvas: { scale: 3, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
       jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
     };
 
-    const scaleWrapper = document.getElementById('invoice-scale-wrapper');
-    if (scaleWrapper) {
-      scaleWrapper.style.transform = 'scale(1)';
-    }
-
-    window.html2pdf().set(opt).from(element).save().then(() => {
-      if (scaleWrapper) {
-        scaleWrapper.style.transform = `scale(${previewScale})`;
+    window.html2pdf().set(opt).from(clone).save().then(() => {
+      if (document.body.contains(tempContainer)) {
+        document.body.removeChild(tempContainer);
+      }
+    }).catch(err => {
+      console.error("PDF generation error:", err);
+      if (document.body.contains(tempContainer)) {
+        document.body.removeChild(tempContainer);
       }
     });
   };
@@ -1760,7 +1779,7 @@ export default function Dashboard({ onLogout }) {
               </div> {/* End of invoice-form-container */}
 
               {/* LIVE PREVIEW COLUMN (Visible on screen, responsive and scales automatically on mobile) */}
-              <div className="invoice-preview-container" ref={previewContainerRef} style={{ width: '100%', overflowX: 'hidden', overflowY: 'auto' }}>
+              <div className="invoice-preview-container" ref={previewContainerRef} style={{ width: '100%', overflowX: 'auto', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
                 <div id="invoice-scale-wrapper" style={{ transform: `scale(${previewScale})`, transformOrigin: 'top left', transition: 'transform 0.2s', width: '794px', height: `${cardHeight * previewScale}px` }}>
                   {/* Printable Invoice Page (Restructured Grid matching the first image layout exactly) */}
                   <div className="invoice-preview-card" ref={cardRef} style={{ padding: '2rem', backgroundColor: '#FFFFFF', color: '#000000', width: '794px', boxSizing: 'border-box' }}>
@@ -1892,12 +1911,12 @@ export default function Dashboard({ onLogout }) {
                       <table className="bill-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.72rem' }}>
                         <thead>
                           <tr>
-                            <th style={{ width: '8%', textAlign: 'center', borderRight: '1.5px solid #000000', borderBottom: '1.5px solid #000000', padding: '4px' }}>Sl No.</th>
-                            <th style={{ width: '45%', textAlign: 'center', borderRight: '1.5px solid #000000', borderBottom: '1.5px solid #000000', padding: '4px' }}>Particulars</th>
-                            <th style={{ width: '12%', textAlign: 'center', borderRight: '1.5px solid #000000', borderBottom: '1.5px solid #000000', padding: '4px' }}>Quantity</th>
+                            <th style={{ width: '6%', textAlign: 'center', borderRight: '1.5px solid #000000', borderBottom: '1.5px solid #000000', padding: '4px' }}>Sl No.</th>
+                            <th style={{ width: '40%', textAlign: 'center', borderRight: '1.5px solid #000000', borderBottom: '1.5px solid #000000', padding: '4px' }}>Particulars</th>
+                            <th style={{ width: '10%', textAlign: 'center', borderRight: '1.5px solid #000000', borderBottom: '1.5px solid #000000', padding: '4px' }}>Quantity</th>
                             <th style={{ width: '15%', textAlign: 'center', borderRight: '1.5px solid #000000', borderBottom: '1.5px solid #000000', padding: '4px' }}>Rate</th>
-                            <th style={{ width: '10%', textAlign: 'center', borderRight: '1.5px solid #000000', borderBottom: '1.5px solid #000000', padding: '4px' }}>per</th>
-                            <th style={{ width: '10%', textAlign: 'center', borderBottom: '1.5px solid #000000', padding: '4px' }}>Amount</th>
+                            <th style={{ width: '7%', textAlign: 'center', borderRight: '1.5px solid #000000', borderBottom: '1.5px solid #000000', padding: '4px' }}>per</th>
+                            <th style={{ width: '22%', textAlign: 'center', borderBottom: '1.5px solid #000000', padding: '4px' }}>Amount</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1923,10 +1942,10 @@ export default function Dashboard({ onLogout }) {
                                 <td style={{ whiteSpace: 'pre-line', borderRight: '1.5px solid #000000', padding: '6px', textAlign: 'left' }}>
                                   <strong style={{ display: 'block', fontSize: '0.75rem' }}>{item.particulars}</strong>
                                 </td>
-                                <td style={{ textAlign: 'right', borderRight: '1.5px solid #000000', padding: '6px' }}>{qtyVal !== null ? qtyVal : ''}</td>
-                                <td style={{ textAlign: 'right', borderRight: '1.5px solid #000000', padding: '6px' }}>{rateVal !== null ? rateVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}</td>
+                                <td style={{ textAlign: 'right', borderRight: '1.5px solid #000000', padding: '6px', whiteSpace: 'nowrap' }}>{qtyVal !== null ? qtyVal : ''}</td>
+                                <td style={{ textAlign: 'right', borderRight: '1.5px solid #000000', padding: '6px', whiteSpace: 'nowrap' }}>{rateVal !== null ? rateVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}</td>
                                 <td style={{ borderRight: '1.5px solid #000000', padding: '6px', textAlign: 'center' }}>{item.per || ''}</td>
-                                <td style={{ textAlign: 'right', fontWeight: 800, padding: '6px' }}>{amtStr}</td>
+                                <td style={{ textAlign: 'right', fontWeight: 800, padding: '6px', whiteSpace: 'nowrap' }}>{amtStr}</td>
                               </tr>
                             );
                           })}
@@ -1946,18 +1965,18 @@ export default function Dashboard({ onLogout }) {
                           {/* Sub Total row (Always shown) */}
                           <tr style={{ borderTop: '1.5px solid #000000', fontWeight: 'bold' }}>
                             <td style={{ borderRight: '1.5px solid #000000', padding: '4px' }}></td>
-                            <td colSpan={4} style={{ borderRight: '1.5px solid #000000', textAlign: 'right', padding: '4px' }}>Sub Total</td>
-                            <td style={{ textAlign: 'right', padding: '4px' }}>{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            <td colSpan={4} style={{ borderRight: '1.5px solid #000000', textAlign: 'right', padding: '4px 6px' }}>Sub Total</td>
+                            <td style={{ textAlign: 'right', padding: '4px 6px', whiteSpace: 'nowrap' }}>{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                           </tr>
 
                           {/* CGST row */}
                           {cgstAmount > 0 && (
                             <tr style={{ fontWeight: 'bold' }}>
                               <td style={{ borderRight: '1.5px solid #000000', padding: '4px' }}></td>
-                              <td colSpan={4} style={{ borderRight: '1.5px solid #000000', textAlign: 'right', padding: '4px' }}>
+                              <td colSpan={4} style={{ borderRight: '1.5px solid #000000', textAlign: 'right', padding: '4px 6px' }}>
                                 CGST ( {displayCgstRate ? `${displayCgstRate} %` : '        %'} )
                               </td>
-                              <td style={{ textAlign: 'right', padding: '4px' }}>{cgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                              <td style={{ textAlign: 'right', padding: '4px 6px', whiteSpace: 'nowrap' }}>{cgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                             </tr>
                           )}
 
@@ -1965,10 +1984,10 @@ export default function Dashboard({ onLogout }) {
                           {sgstAmount > 0 && (
                             <tr style={{ fontWeight: 'bold' }}>
                               <td style={{ borderRight: '1.5px solid #000000', padding: '4px' }}></td>
-                              <td colSpan={4} style={{ borderRight: '1.5px solid #000000', textAlign: 'right', padding: '4px' }}>
+                              <td colSpan={4} style={{ borderRight: '1.5px solid #000000', textAlign: 'right', padding: '4px 6px' }}>
                                 SGST ( {displaySgstRate ? `${displaySgstRate} %` : '        %'} )
                               </td>
-                              <td style={{ textAlign: 'right', padding: '4px' }}>{sgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                              <td style={{ textAlign: 'right', padding: '4px 6px', whiteSpace: 'nowrap' }}>{sgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                             </tr>
                           )}
 
@@ -1976,10 +1995,10 @@ export default function Dashboard({ onLogout }) {
                           {igstAmount > 0 && (
                             <tr style={{ fontWeight: 'bold' }}>
                               <td style={{ borderRight: '1.5px solid #000000', padding: '4px' }}></td>
-                              <td colSpan={4} style={{ borderRight: '1.5px solid #000000', textAlign: 'right', padding: '4px' }}>
+                              <td colSpan={4} style={{ borderRight: '1.5px solid #000000', textAlign: 'right', padding: '4px 6px' }}>
                                 IGST ( 0 % )
                               </td>
-                              <td style={{ textAlign: 'right', padding: '4px' }}>{igstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                              <td style={{ textAlign: 'right', padding: '4px 6px', whiteSpace: 'nowrap' }}>{igstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                             </tr>
                           )}
 
@@ -1988,10 +2007,10 @@ export default function Dashboard({ onLogout }) {
                           {/* Grand Total Row */}
                           <tr style={{ borderTop: '1.5px solid #000000', fontWeight: '800', backgroundColor: '#E2E8F0' }}>
                             <td style={{ borderRight: '1.5px solid #000000', padding: '5px' }}></td>
-                            <td colSpan={4} style={{ borderRight: '1.5px solid #000000', textAlign: 'right', padding: '5px', fontWeight: '800' }}>
+                            <td colSpan={4} style={{ borderRight: '1.5px solid #000000', textAlign: 'right', padding: '5px 6px', fontWeight: '800' }}>
                               Grand Total
                             </td>
-                            <td style={{ textAlign: 'right', padding: '5px', fontWeight: '800' }}>
+                            <td style={{ textAlign: 'right', padding: '5px 6px', fontWeight: '800', whiteSpace: 'nowrap' }}>
                               ₹ {totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
                           </tr>

@@ -356,10 +356,11 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
   useEffect(() => {
     const updateScale = () => {
       if (previewContainerRef.current) {
-        // Calculate available width minus some padding
-        const availableWidth = previewContainerRef.current.clientWidth - 40;
-        const newScale = availableWidth / 1123;
-        setPreviewScale(newScale < 1 ? newScale : 1);
+        const availableWidth = previewContainerRef.current.clientWidth;
+        const isMobile = window.innerWidth <= 768;
+        const calcScale = (availableWidth - 16) / 1123;
+        const targetScale = isMobile ? Math.max(0.78, calcScale) : (calcScale < 1 ? calcScale : 1);
+        setPreviewScale(targetScale);
       }
     };
 
