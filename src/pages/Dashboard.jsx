@@ -1063,9 +1063,12 @@ export default function Dashboard({ onLogout }) {
         {activeTab === 'overview' && (
           <div>
             <div className="dashboard-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h2 className="dashboard-title" style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-dark)' }}>Dashboard Overview</h2>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>Real-time logistics, invoicing analytics & business operational metrics</p>
+              <div className="page-title-container" style={{ margin: 0 }}>
+                <span className="page-sub-heading">
+                  <span className="page-brand-dot"></span>
+                  LOGISTICS & BILLING
+                </span>
+                <h1 className="page-main-heading">DASHBOARD OVERVIEW</h1>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0, 180, 216, 0.1)', padding: '0.4rem 0.9rem', borderRadius: '50px', border: '1px solid rgba(0, 180, 216, 0.2)' }}>
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block' }}></span>
@@ -1327,11 +1330,15 @@ export default function Dashboard({ onLogout }) {
           </div>
         )}
 
-        {/* Invoice Creator Tab */}
+        {/* activeTab === 'creator' */}
         {activeTab === 'creator' && (
           <div>
-            <div className="dashboard-header">
-              <h2 className="dashboard-title">Create / Edit Invoice</h2>
+            <div className="page-title-container" style={{ marginBottom: '1.5rem' }}>
+              <span className="page-sub-heading">
+                <span className="page-brand-dot"></span>
+                TAX INVOICE & BILLING
+              </span>
+              <h1 className="page-main-heading">DEBIT NOTE CREATOR</h1>
             </div>
 
             <div className="invoice-workspace">
@@ -2096,23 +2103,29 @@ export default function Dashboard({ onLogout }) {
         {/* Unified History Tab */}
         {activeTab === 'history' && (
           <div>
-            <div className="dashboard-header">
-              <h2 className="dashboard-title">History Registry</h2>
+            <div className="page-title-container" style={{ marginBottom: '1.5rem' }}>
+              <span className="page-sub-heading">
+                <span className="page-brand-dot"></span>
+                DATABASE RECORDS
+              </span>
+              <h1 className="page-main-heading">HISTORY REGISTRY</h1>
             </div>
 
             {/* History Sub-tabs */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px', borderBottom: '1px solid rgba(0, 180, 216, 0.15)', paddingBottom: '12px' }}>
               <button
                 onClick={() => setHistorySubTab('dn')}
                 style={{
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  backgroundColor: historySubTab === 'dn' ? '#E53935' : 'transparent',
-                  color: historySubTab === 'dn' ? '#fff' : 'var(--text-secondary)',
-                  border: historySubTab === 'dn' ? 'none' : '1px solid var(--border-color)',
+                  padding: '8px 20px',
+                  borderRadius: '50px',
+                  backgroundColor: historySubTab === 'dn' ? '#00B4D8' : '#FFFFFF',
+                  color: historySubTab === 'dn' ? '#FFFFFF' : '#00A8C6',
+                  border: historySubTab === 'dn' ? 'none' : '1.5px solid rgba(0, 168, 198, 0.3)',
                   cursor: 'pointer',
                   fontWeight: 'bold',
-                  fontSize: '0.85rem'
+                  fontSize: '0.85rem',
+                  boxShadow: historySubTab === 'dn' ? '0 4px 15px rgba(0, 180, 216, 0.35)' : 'none',
+                  transition: 'all 0.3s ease'
                 }}
               >
                 Debit Notes (DN)
@@ -2120,14 +2133,16 @@ export default function Dashboard({ onLogout }) {
               <button
                 onClick={() => setHistorySubTab('lr')}
                 style={{
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  backgroundColor: historySubTab === 'lr' ? '#E53935' : 'transparent',
-                  color: historySubTab === 'lr' ? '#fff' : 'var(--text-secondary)',
-                  border: historySubTab === 'lr' ? 'none' : '1px solid var(--border-color)',
+                  padding: '8px 20px',
+                  borderRadius: '50px',
+                  backgroundColor: historySubTab === 'lr' ? '#00B4D8' : '#FFFFFF',
+                  color: historySubTab === 'lr' ? '#FFFFFF' : '#00A8C6',
+                  border: historySubTab === 'lr' ? 'none' : '1.5px solid rgba(0, 168, 198, 0.3)',
                   cursor: 'pointer',
                   fontWeight: 'bold',
-                  fontSize: '0.85rem'
+                  fontSize: '0.85rem',
+                  boxShadow: historySubTab === 'lr' ? '0 4px 15px rgba(0, 180, 216, 0.35)' : 'none',
+                  transition: 'all 0.3s ease'
                 }}
               >
                 Lorry Receipts (LR)
@@ -2135,14 +2150,16 @@ export default function Dashboard({ onLogout }) {
               <button
                 onClick={() => setHistorySubTab('quote')}
                 style={{
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  backgroundColor: historySubTab === 'quote' ? '#E53935' : 'transparent',
-                  color: historySubTab === 'quote' ? '#fff' : 'var(--text-secondary)',
-                  border: historySubTab === 'quote' ? 'none' : '1px solid var(--border-color)',
+                  padding: '8px 20px',
+                  borderRadius: '50px',
+                  backgroundColor: historySubTab === 'quote' ? '#00B4D8' : '#FFFFFF',
+                  color: historySubTab === 'quote' ? '#FFFFFF' : '#00A8C6',
+                  border: historySubTab === 'quote' ? 'none' : '1.5px solid rgba(0, 168, 198, 0.3)',
                   cursor: 'pointer',
                   fontWeight: 'bold',
-                  fontSize: '0.85rem'
+                  fontSize: '0.85rem',
+                  boxShadow: historySubTab === 'quote' ? '0 4px 15px rgba(0, 180, 216, 0.35)' : 'none',
+                  transition: 'all 0.3s ease'
                 }}
               >
                 Quotations

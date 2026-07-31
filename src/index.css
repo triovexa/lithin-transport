@@ -645,24 +645,26 @@ button, input, select, textarea {
   overflow: hidden;
 }
 
-.login-wave-bg {
-  position: absolute;
+.login-wave-bg,
+.global-wave-bg {
+  position: fixed;
   top: 0;
   left: 0;
   width: 48%;
-  height: 100%;
+  height: 100vh;
   pointer-events: none;
-  z-index: 1;
+  z-index: -10;
 }
 
-.login-stripes-bg {
-  position: absolute;
+.login-stripes-bg,
+.global-stripes-bg {
+  position: fixed;
   top: 0;
   right: 0;
   width: 60%;
-  height: 100%;
+  height: 100vh;
   pointer-events: none;
-  z-index: 1;
+  z-index: -10;
   overflow: hidden;
 }
 
@@ -827,8 +829,47 @@ button, input, select, textarea {
   font-weight: 700;
 }
 
+/* Page Heading Component matching LoginPage style */
+.page-title-container {
+  text-align: left;
+  margin-bottom: 2rem;
+}
+
+.page-sub-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #00A8C6;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.page-brand-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #00B4D8;
+  box-shadow: 0 0 10px rgba(0, 180, 216, 0.6);
+  display: inline-block;
+}
+
+.page-main-heading {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #00A8C6;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  line-height: 1.1;
+  margin: 0.2rem 0 0 0;
+}
+
 /* Dashboard Layout */
 .dashboard-layout {
+  position: relative;
+  z-index: 1;
   flex: 1;
   display: grid;
   grid-template-columns: 280px 1fr;
@@ -837,15 +878,17 @@ button, input, select, textarea {
 }
 
 .sidebar {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.15) 100%);
-  border-right: 1.5px solid rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(45px) saturate(210%);
-  -webkit-backdrop-filter: blur(45px) saturate(210%);
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(220, 248, 252, 0.65) 100%);
+  border-right: 1.5px solid rgba(0, 180, 216, 0.2);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
   padding: 2.5rem 1.5rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 10px 0 30px -15px rgba(0, 0, 0, 0.02), inset -1px 0 0 rgba(255, 255, 255, 0.45);
+  box-shadow: 10px 0 30px -15px rgba(0, 180, 216, 0.1);
 }
 
 .sidebar-menu {
@@ -876,18 +919,19 @@ button, input, select, textarea {
 }
 
 .sidebar-link:hover {
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(0, 180, 216, 0.08);
   color: var(--text-dark);
 }
 
 .sidebar-link.active {
-  background-color: var(--text-dark) !important;
+  background: #00B4D8 !important;
   color: #FFFFFF !important;
-  box-shadow: 0 4px 15px rgba(15, 23, 42, 0.15);
+  box-shadow: 0 6px 20px rgba(0, 180, 216, 0.35);
+  font-weight: 700;
 }
 
 .sidebar-link.active .sidebar-icon {
-  color: var(--primary) !important;
+  color: #FFFFFF !important;
 }
 
 .sidebar-icon {
@@ -900,7 +944,7 @@ button, input, select, textarea {
   align-items: center;
   justify-content: space-between;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid rgba(0, 180, 216, 0.15);
 }
 
 .user-info {
@@ -913,12 +957,13 @@ button, input, select, textarea {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background-color: var(--text-dark);
+  background-color: #00B4D8;
   color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
+  box-shadow: 0 0 10px rgba(0, 180, 216, 0.4);
 }
 
 .user-details {
@@ -951,6 +996,8 @@ button, input, select, textarea {
 
 /* Dashboard Content Area */
 .dashboard-content {
+  position: relative;
+  z-index: 2;
   padding: 2.5rem;
   overflow-y: auto;
   max-height: calc(100vh - 80px);
@@ -966,7 +1013,7 @@ button, input, select, textarea {
 .dashboard-title {
   font-size: 1.75rem;
   font-weight: 800;
-  color: var(--text-dark);
+  color: #00A8C6;
 }
 
 /* Overview Cards */
@@ -978,24 +1025,24 @@ button, input, select, textarea {
 }
 
 .overview-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.18) 100%);
-  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(220, 248, 252, 0.5) 100%);
+  border: 1.5px solid rgba(0, 180, 216, 0.25);
   border-radius: var(--card-radius);
   padding: 1.75rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  backdrop-filter: blur(40px) saturate(200%);
-  -webkit-backdrop-filter: blur(40px) saturate(200%);
-  box-shadow: var(--shadow-premium), 0 2px 14px rgba(255, 255, 255, 0.6) inset;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 15px 35px rgba(0, 180, 216, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   transition: var(--transition);
 }
 
 .overview-card:hover {
   transform: translateY(-3px);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.28) 100%);
-  border-color: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.06), 0 2px 14px rgba(255, 255, 255, 0.8) inset;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(200, 245, 252, 0.65) 100%);
+  border-color: rgba(0, 180, 216, 0.4);
+  box-shadow: 0 20px 40px rgba(0, 180, 216, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
 .quick-actions-row {
@@ -1027,14 +1074,14 @@ button, input, select, textarea {
 .overview-card-icon {
   width: 48px;
   height: 48px;
-  background-color: rgba(255, 255, 255, 0.6);
-  color: var(--text-dark);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #00A8C6;
+  border: 1px solid rgba(0, 180, 216, 0.25);
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  box-shadow: 0 4px 12px rgba(0, 180, 216, 0.1);
 }
 
 .invoice-workspace {
@@ -1074,13 +1121,13 @@ button, input, select, textarea {
 }
 
 .invoice-form-container {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.15) 100%);
-  border: 1.5px solid rgba(255, 255, 255, 0.75);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(220, 248, 252, 0.5) 100%);
+  border: 1.5px solid rgba(0, 180, 216, 0.25);
   border-radius: var(--card-radius);
   padding: 2.25rem 2rem;
-  backdrop-filter: blur(45px) saturate(210%);
-  -webkit-backdrop-filter: blur(45px) saturate(210%);
-  box-shadow: var(--shadow-premium), 0 2px 14px rgba(255, 255, 255, 0.6) inset;
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  box-shadow: 0 15px 35px rgba(0, 180, 216, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   text-align: left;
 }
 
@@ -1089,7 +1136,7 @@ button, input, select, textarea {
   font-weight: 700;
   color: var(--text-dark);
   margin-bottom: 1.25rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(0, 180, 216, 0.15);
   padding-bottom: 0.5rem;
 }
 
@@ -1123,20 +1170,26 @@ button, input, select, textarea {
 }
 
 .form-input {
-  background-color: var(--bg-input);
-  border: 1.5px solid var(--border-color);
-  color: var(--text-main);
+  width: 100%;
+  background-color: #EBF3FE;
+  border: 1px solid #D0E4FC;
+  color: #20304D;
   padding: 0.75rem 1rem;
   border-radius: 12px;
   outline: none;
   font-size: 0.95rem;
+  font-family: var(--font-family);
   transition: var(--transition);
 }
 
+.form-input::placeholder {
+  color: #7B93A8;
+}
+
 .form-input:focus {
-  border-color: var(--text-dark);
+  border-color: #00A8C6;
   background-color: #FFFFFF;
-  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 0 0 4px rgba(0, 168, 198, 0.15);
 }
 
 /* Items Dynamic Table Form */
@@ -2148,7 +2201,7 @@ button, input, select, textarea {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: -2; /* Render below everything including content and glass */
+  z-index: -20; /* Render below everything including content and glass */
   overflow: hidden;
   pointer-events: none;
 }

@@ -433,7 +433,14 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+      <div className="page-title-container" style={{ marginBottom: '1.5rem', alignSelf: 'flex-start' }}>
+        <span className="page-sub-heading">
+          <span className="page-brand-dot"></span>
+          ESTIMATE & QUOTATION
+        </span>
+        <h1 className="page-main-heading">{type === 'export' ? 'EXPORT QUOTATION' : 'DOMESTIC QUOTATION'}</h1>
+      </div>
       
       {type === 'export' ? (
         <>

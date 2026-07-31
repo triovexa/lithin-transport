@@ -988,8 +988,12 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
         }
       `}</style>
 
-      <div className="dashboard-header">
-        <h2 className="dashboard-title">Create / Edit Lorry Receipt (LR)</h2>
+      <div className="page-title-container" style={{ marginBottom: '1.5rem' }}>
+        <span className="page-sub-heading">
+          <span className="page-brand-dot"></span>
+          LORRY RECEIPT
+        </span>
+        <h1 className="page-main-heading">LR CREATOR</h1>
       </div>
 
       <div className="lr-workspace">

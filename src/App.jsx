@@ -40,10 +40,24 @@ function App() {
   return (
     <>
       
+      {/* Global Background Elements matching Login Page exactly */}
       <div className="bg-blur-blobs">
         <div className="blob blob-1"></div>
         <div className="blob blob-2"></div>
         <div className="blob blob-3"></div>
+      </div>
+
+      {/* Organic Fluid Wave SVG Background Layer */}
+      <svg className="global-wave-bg" viewBox="0 0 500 800" preserveAspectRatio="none">
+        <path d="M0,0 L220,0 C340,160 180,320 280,480 C360,600 230,730 180,800 L0,800 Z" fill="#FFFFFF" opacity="0.85" />
+        <path d="M0,0 L260,0 C380,180 210,350 310,530 C390,650 260,760 210,800 L0,800 Z" fill="#6EE2F1" opacity="0.35" />
+      </svg>
+
+      {/* Floating Translucent Diagonal Stripes Background Layer */}
+      <div className="global-stripes-bg">
+        <div className="login-stripe stripe-1"></div>
+        <div className="login-stripe stripe-2"></div>
+        <div className="login-stripe stripe-3"></div>
       </div>
 
      

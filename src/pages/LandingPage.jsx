@@ -105,8 +105,13 @@ export default function LandingPage({ onNavigate }) {
       {/* Hero Section */}
       <section className="hero-section" style={{ paddingBottom: '0rem' }}>
         <div className="hero-content">
-          <p className="hero-subtitle">Certified Logistics</p>
-          <h1 className="hero-title">Connecting People.<br />Improving lives.</h1>
+          <div className="page-title-container" style={{ margin: '0 auto 1.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <span className="page-sub-heading">
+              <span className="page-brand-dot"></span>
+              CERTIFIED LOGISTICS
+            </span>
+            <h1 className="page-main-heading" style={{ fontSize: '3rem' }}>LITHIN TRANSPORT</h1>
+          </div>
           <p className="hero-description">
             Your trusted South-India cargo logistics partner delivering safety, certified transport excellence, and premium goods forwarding across South India.
           </p>
