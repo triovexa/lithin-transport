@@ -13,20 +13,26 @@ function App() {
     return loggedIn ? 'dashboard' : 'home';
   });
 
-  // Simple scroll helper
-  const handleScrollTo = (id) => {
-    setPage('home');
-    setTimeout(() => {
-      const element = document.getElementById(id);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
+  // Enforce permanent persistent login sync with localStorage
+  useEffect(() => {
+    if (isLoggedIn) {
+      localStorage.setItem('lt_is_logged_in', 'true');
+      localStorage.setItem('svat_is_logged_in', 'true');
+    }
+  }, [isLoggedIn]);
+
+  const navigateTo = (targetPage) => {
+    if (isLoggedIn && targetPage === 'login') {
+      setPage('dashboard');
+    } else {
+      setPage(targetPage);
+    }
   };
 
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
     localStorage.setItem('lt_is_logged_in', 'true');
+    localStorage.setItem('svat_is_logged_in', 'true');
     setPage('dashboard');
   };
 
@@ -69,7 +75,7 @@ function App() {
           borderBottom: '1px solid rgba(0, 180, 216, 0.15)',
           padding: '0.85rem 3rem'
         }}>
-          <div className="logo-container" onClick={() => setPage('home')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+          <div className="logo-container" onClick={() => navigateTo('home')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
             <div style={{
               width: '54px',
               height: '54px',
@@ -90,7 +96,7 @@ function App() {
           <ul className="nav-links" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             <li>
               <button
-                onClick={() => setPage('home')}
+                onClick={() => navigateTo('home')}
                 style={{
                   background: 'none',
                   border: 'none',
@@ -108,12 +114,12 @@ function App() {
 
           <div className="nav-actions">
             {isLoggedIn ? (
-              <button className="btn-primary" onClick={() => setPage('dashboard')}>
+              <button className="btn-primary" onClick={() => navigateTo('dashboard')}>
                 Dashboard
               </button>
             ) : (
               <button 
-                onClick={() => setPage('login')} 
+                onClick={() => navigateTo('login')} 
                 style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
@@ -139,7 +145,7 @@ function App() {
       )}
 
       {/* Pages Container */}
-      {page === 'home' && <LandingPage onNavigate={setPage} />}
+      {page === 'home' && <LandingPage onNavigate={navigateTo} />}
       {page === 'login' && <LoginPage onLoginSuccess={handleLoginSuccess} />}
       {page === 'dashboard' && <Dashboard onLogout={handleLogout} />}
 
