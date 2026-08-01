@@ -1,0 +1,2453 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { LayoutDashboard, FileText, History, LogOut, Plus, Trash2, Printer, Save, IndianRupee, Calendar, TrendingUp, Truck } from 'lucide-react';
+import LrCreator from './LrCreator';
+import Quotation from './Quotation';
+import { db } from '../firebase';
+import { collection, doc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
+
+const LTLogo = () => (
+  <div style={{
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '0',
+    width: '105px',
+    height: '105px',
+    flexShrink: 0,
+    position: 'relative'
+  }}>
+    <img
+      src="/logo.png"
+      alt="LT Logo"
+      style={{
+        width: '100px',
+        height: '100px',
+        objectFit: 'contain',
+        filter: 'brightness(1.2) contrast(1.1) saturate(1.15)'
+      }}
+    />
+    <span style={{
+      position: 'absolute',
+      top: '0px',
+      right: '0px',
+      fontSize: '0.65rem',
+      fontWeight: 'bold',
+      color: '#000000',
+      lineHeight: '1'
+    }}>TM</span>
+  </div>
+);
+
+// Indian Numbering System to Words conversion helper
+const numberToWords = (num) => {
+  const integerPart = Math.floor(num);
+  if (integerPart === 0) return 'INR ZERO ONLY';
+
+  const a = ['', 'one ', 'two ', 'three ', 'four ', 'five ', 'six ', 'seven ', 'eight ', 'nine ', 'ten ', 'eleven ', 'twelve ', 'thirteen ', 'fourteen ', 'fifteen ', 'sixteen ', 'seventeen ', 'eighteen ', 'nineteen '];
+  const b = ['', '', 'twenty ', 'thirty ', 'forty ', 'fifty ', 'sixty ', 'seventy ', 'eighty ', 'ninety '];
+
+  const formatWord = (n) => {
+    if (n < 20) return a[n];
+    if (n < 100) return b[Math.floor(n / 10)] + a[n % 10];
+    if (n < 1000) return a[Math.floor(n / 100)] + 'hundred ' + (n % 100 !== 0 ? 'and ' + formatWord(n % 100) : '');
+    if (n < 100000) return formatWord(Math.floor(n / 1000)) + 'thousand ' + (n % 1000 !== 0 ? formatWord(n % 1000) : '');
+    if (n < 10000000) return formatWord(Math.floor(n / 100000)) + 'lakh ' + (n % 100000 !== 0 ? formatWord(n % 100000) : '');
+    return formatWord(Math.floor(n / 10000000)) + 'crore ' + (n % 10000000 !== 0 ? formatWord(n % 10000000) : '');
+  };
+
+  const words = formatWord(integerPart);
+  return 'INR ' + words.trim().replace(/\s+/g, ' ').toUpperCase() + ' ONLY';
+};
+
+// Autocomplete suggestions dropdown element
+const SuggestionsDropdown = ({ query, list, onSelect, onClose }) => {
+  const queryClean = (query || '').toString().toLowerCase().trim();
+  
+  const filtered = list.filter(val => {
+    if (!val) return false;
+    const valLower = val.toString().toLowerCase();
+    if (!queryClean) return true; // show all when query is empty
+    return valLower.includes(queryClean) && valLower !== queryClean;
+  });
+
+  const visibleList = filtered.slice(0, 15);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (dropdownRef.current && dropdownRef.current.contains(e.target)) {
+        return;
+      }
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        return;
+      }
+      onClose();
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [onClose]);
+
+  if (visibleList.length === 0) return null;
+
+  return (
+    <ul ref={dropdownRef} className="suggestions-dropdown-list" style={{
+      position: 'absolute',
+      top: '100%',
+      left: 0,
+      right: 0,
+      backgroundColor: '#FFFFFF',
+      border: '1px solid rgba(0, 0, 0, 0.1)',
+      borderRadius: '12px',
+      maxHeight: '180px',
+      overflowY: 'auto',
+      zIndex: 100,
+      listStyle: 'none',
+      margin: 0,
+      padding: 0,
+      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08)'
+    }}>
+      {visibleList.map((val, idx) => (
+        <li
+          key={idx}
+          style={{
+            padding: '8px 12px',
+            cursor: 'pointer',
+            fontSize: '0.85rem',
+            color: 'var(--text-dark)',
+            borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
+            transition: 'background-color 0.2s',
+            textAlign: 'left',
+            fontWeight: 'normal'
+          }}
+          onMouseDown={(e) => {
+            e.preventDefault(); // Prevents textbox blur from closing this list prematurely
+            onSelect(val);
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(241, 180, 0, 0.15)'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+        >
+          {val}
+        </li>
+      ))}
+    </ul>
+  );
+};
+
+const AutocompleteInput = ({
+  label,
+  type = 'text',
+  placeholder,
+  value,
+  onChange,
+  suggestions,
+  onSelectSuggestion,
+  style = {}
+}) => {
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="form-group" style={style}>
+      {label && <label className="form-label">{label}</label>}
+      <div ref={wrapperRef} style={{ position: 'relative', width: '100%' }}>
+        <input
+          type={type}
+          className="form-input"
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          onFocus={() => setShowSuggestions(true)}
+        />
+        {showSuggestions && (
+          <SuggestionsDropdown
+            query={value}
+            list={suggestions}
+            onSelect={(val) => {
+              onSelectSuggestion(val);
+              setShowSuggestions(false);
+            }}
+            onClose={() => setShowSuggestions(false)}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+const AutocompleteTextarea = ({
+  label,
+  placeholder,
+  rows = 2,
+  value,
+  onChange,
+  suggestions,
+  onSelectSuggestion,
+  style = {}
+}) => {
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="form-group" style={style}>
+      {label && <label className="form-label">{label}</label>}
+      <div ref={wrapperRef} style={{ position: 'relative', width: '100%' }}>
+        <textarea
+          rows={rows}
+          className="form-input"
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          onFocus={() => setShowSuggestions(true)}
+          style={{ resize: 'vertical' }}
+        />
+        {showSuggestions && (
+          <SuggestionsDropdown
+            query={value}
+            list={suggestions}
+            onSelect={(val) => {
+              onSelectSuggestion(val);
+              setShowSuggestions(false);
+            }}
+            onClose={() => setShowSuggestions(false)}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+const DEFAULT_INVOICE = {
+  companyName: 'LITHIN TRANSPORT',
+  companyAddress: '4/252, Vedivattam, Agraharam vill and po, Natrampalli TK, Tirupattur DT. 635651',
+  companyGst: '33FFSPP0139H1Z8',
+  companyState: 'Tamil Nadu, Code: 33',
+  companyEmail: 'lithintransports@gmail.com',
+  companyWebsite: 'www.lithintransport.in',
+  rcmStatus: 'Exempted',
+  debitNoteNo: '',
+  date: '',
+  originalInvoiceNo: '',
+  originalInvoiceDate: '',
+  otherRefs: '',
+  consigneeName: '',
+  consigneeAddress: '',
+  consigneeGst: '',
+  consigneeState: '',
+  consigneeEmail: '',
+  vesselFlightNo: '',
+  placeOfReceipt: '',
+  portOfLoading: '',
+  portOfDischarge: '',
+  ctns: '',
+  cbm: '',
+  weight: '',
+  items: [
+    { particulars: '', quantity: '', rate: '', per: '', amount: '' }
+  ],
+  bankName: 'INDIAN OVERSEAS BANK',
+  bankAccount: '398402000000076',
+  bankBranch: 'NATARAMPALLI-635651 & IFSC: IOBA0003984',
+  bankHolderName: 'M/S LITHIN TRANSPORT',
+  signatoryName: '',
+  gstPercentage: '',
+  wordsOverride: ''
+};
+
+export default function Dashboard({ onLogout }) {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [isQuotationMenuOpen, setIsQuotationMenuOpen] = useState(false);
+  const [isMobileQuoteMenuOpen, setIsMobileQuoteMenuOpen] = useState(false);
+  const [formData, setFormData] = useState(DEFAULT_INVOICE);
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    if (dateStr.includes('/')) return dateStr;
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    return dateStr;
+  };
+  const [loadedLr, setLoadedLr] = useState(null);
+  const [loadedQuotation, setLoadedQuotation] = useState(null);
+  const [historySubTab, setHistorySubTab] = useState('dn');
+
+  const previewContainerRef = useRef(null);
+  const [previewScale, setPreviewScale] = useState(1);
+  const cardRef = useRef(null);
+  const [cardHeight, setCardHeight] = useState(1123);
+
+  useEffect(() => {
+    const updateScale = () => {
+      if (previewContainerRef.current) {
+        // Calculate available width minus some padding
+        const availableWidth = previewContainerRef.current.clientWidth - 40;
+        const newScale = availableWidth / 794; // 794 is the invoice-preview-card width
+        setPreviewScale(newScale < 1 ? newScale : 1);
+      }
+    };
+
+    updateScale();
+    setTimeout(updateScale, 100);
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (!cardRef.current) return;
+    const observer = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        setCardHeight(Math.round(entry.contentRect.height));
+      }
+    });
+    observer.observe(cardRef.current);
+    return () => observer.disconnect();
+  }, [activeTab]);
+
+  const [invoices, setInvoices] = useState(() => {
+    const saved = localStorage.getItem('lt_saved_invoices') || localStorage.getItem('svat_saved_invoices');
+    return saved ? JSON.parse(saved) : [
+      {
+        id: 'LT/DN/26-27/13',
+        consignee: 'NEW SABARI SASTHA SHIPPING SERVICES',
+        date: '30-April-26',
+        amount: 62000,
+        status: 'paid'
+      },
+      {
+        id: 'LT/DN/26-27/12',
+        consignee: 'NEW SABARI SASTHA SHIPPING SERVICES',
+        date: '15-April-26',
+        amount: 45000,
+        status: 'paid'
+      }
+    ];
+  });
+
+  const [savedLrs, setSavedLrs] = useState(() => {
+    return JSON.parse(localStorage.getItem('svat_saved_lrs') || '[]');
+  });
+
+  const [savedQuotations, setSavedQuotations] = useState(() => {
+    return JSON.parse(localStorage.getItem('svat_saved_quotations') || '[]');
+  });
+
+  useEffect(() => {
+    const unsubInvoices = onSnapshot(collection(db, 'invoices'), (snapshot) => {
+      const docs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+      const sorted = docs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      setInvoices(sorted);
+      localStorage.setItem('svat_saved_invoices', JSON.stringify(sorted));
+    }, (err) => console.error("Firestore invoices listener error:", err));
+
+    const unsubLrs = onSnapshot(collection(db, 'lorry_receipts'), (snapshot) => {
+      const docs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+      const sorted = docs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      setSavedLrs(sorted);
+      localStorage.setItem('svat_saved_lrs', JSON.stringify(sorted));
+    }, (err) => console.error("Firestore LRs listener error:", err));
+
+    const unsubQuotations = onSnapshot(collection(db, 'quotations'), (snapshot) => {
+      const docs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+      const sorted = docs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      setSavedQuotations(sorted);
+      localStorage.setItem('svat_saved_quotations', JSON.stringify(sorted));
+    }, (err) => console.error("Firestore quotations listener error:", err));
+
+    return () => {
+      unsubInvoices();
+      unsubLrs();
+      unsubQuotations();
+    };
+  }, []);
+
+  const handleTabChange = (tabName) => {
+    setActiveTab(tabName);
+    if (!tabName.startsWith('quotation')) setLoadedQuotation(null);
+    if (tabName !== 'lr') setLoadedLr(null);
+    setIsMobileQuoteMenuOpen(false);
+  };
+
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, type: '', id: null });
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const triggerToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, show: false }));
+    }, 3000);
+  };
+
+  const [subtotal, setSubtotal] = useState(0);
+  const [cgstAmount, setCgstAmount] = useState(0);
+  const [sgstAmount, setSgstAmount] = useState(0);
+  const [igstAmount, setIgstAmount] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [amountInWords, setAmountInWords] = useState('');
+
+  // Autocomplete Particulars suggestion state
+  const [suggestions, setSuggestions] = useState(() => {
+    const saved = localStorage.getItem('svat_particulars_suggestions');
+    return saved ? JSON.parse(saved) : [
+      "VEHICLE HIRING CHARGES",
+      "HALTING CHARGES",
+      "HALTING CHARGES (2 DAYS)",
+      "CONTAINER HANDLING CHARGES",
+      "TRANSPORTATION CHARGES",
+      "CONTAINER LOADING CHARGES",
+      "PORT OUT FLOW CHARGES"
+    ];
+  });
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'suggestions', 'particulars'), (docSnap) => {
+      if (docSnap.exists()) {
+        const list = docSnap.data().list || [];
+        setSuggestions(list);
+        localStorage.setItem('svat_particulars_suggestions', JSON.stringify(list));
+      }
+    }, (error) => {
+      console.error("Firestore suggestions listener error:", error);
+    });
+    return () => unsubscribe();
+  }, []);
+  const [activeRowIdx, setActiveRowIdx] = useState(null);
+  const [suggestionsRegistry, setSuggestionsRegistry] = useState(() => {
+    const saved = localStorage.getItem('svat_suggestions_registry');
+    return saved ? JSON.parse(saved) : {
+      cities: ['Tirupur', 'Mumbai', 'Chennai', 'Bangalore', 'Tuticorin', 'Cochin', 'Pollachi', 'Hyderabad', 'Delhi'],
+      consignees: [],
+      addresses: [],
+      gsts: ['33FFSPP0139H1Z8'],
+      states: ['Tamil Nadu, Code: 33'],
+      vessels: [],
+      otherRefs: ['LR COPY'],
+      banks: ['INDIAN OVERSEAS BANK'],
+      accounts: ['398402000000076'],
+      branches: ['NATARAMPALLI-635651 & IFSC: IOBA0003984'],
+      holders: ['M/S LITHIN TRANSPORT'],
+      toAddresses: [],
+      invoices: [],
+      debitNotes: []
+    };
+  });
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(db, 'suggestions', 'registry'), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setSuggestionsRegistry(prev => {
+          const merged = { ...prev, ...data };
+          localStorage.setItem('svat_suggestions_registry', JSON.stringify(merged));
+          return merged;
+        });
+      }
+    }, (error) => {
+      console.error("Firestore registry suggestions listener error:", error);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const saveToRegistry = async (updates) => {
+    let changed = false;
+    const current = { ...suggestionsRegistry };
+
+    Object.keys(updates).forEach(key => {
+      if (Array.isArray(updates[key])) {
+        const cleanUpdates = updates[key]
+          .map(val => (val || '').toString().trim())
+          .filter(val => val.length > 0);
+
+        const existingList = current[key] || [];
+        const mergedList = [...existingList];
+        
+        cleanUpdates.forEach(item => {
+          if (!mergedList.includes(item)) {
+            mergedList.push(item);
+            changed = true;
+          }
+        });
+        current[key] = mergedList;
+      }
+    });
+
+    if (changed) {
+      setSuggestionsRegistry(current);
+      localStorage.setItem('svat_suggestions_registry', JSON.stringify(current));
+      try {
+        await setDoc(doc(db, 'suggestions', 'registry'), current);
+      } catch (err) {
+        console.error("Error saving registry suggestions to Firestore:", err);
+      }
+    }
+  };
+
+  // Re-calculate totals, GST, and words dynamically (sanitizing commas/symbols)
+  useEffect(() => {
+    const calculatedSubtotal = formData.items.reduce((acc, item) => {
+      const cleanAmtStr = (item.amount || '').toString().replace(/[^0-9.]/g, '');
+      if (cleanAmtStr !== '') {
+        return acc + (parseFloat(cleanAmtStr) || 0);
+      }
+      const cleanQtyStr = (item.quantity || '').toString().replace(/[^0-9.]/g, '');
+      const cleanRateStr = (item.rate || '').toString().replace(/[^0-9.]/g, '');
+      const q = parseFloat(cleanQtyStr) || 0;
+      const r = parseFloat(cleanRateStr) || 0;
+      return acc + (q * r);
+    }, 0);
+
+    setSubtotal(calculatedSubtotal);
+
+    const rcmStatus = formData.rcmStatus || 'Exempted';
+    const gstPct = rcmStatus === 'Exempted' ? 0 : (parseFloat(formData.gstPercentage) || 0);
+    const cgstRate = gstPct / 2;
+    const sgstRate = gstPct / 2;
+
+    const cgst = (calculatedSubtotal * cgstRate) / 100;
+    const sgst = (calculatedSubtotal * sgstRate) / 100;
+
+    // Only add to grand total if RCM status is 'No' (Normal GST)
+    const grandTotal = rcmStatus === 'No'
+      ? (calculatedSubtotal + cgst + sgst)
+      : calculatedSubtotal;
+
+    setCgstAmount(cgst);
+    setSgstAmount(sgst);
+    setIgstAmount(0); // IGST removed
+    setTotalAmount(grandTotal);
+
+    if (!formData.wordsOverride) {
+      setAmountInWords(numberToWords(grandTotal));
+    } else {
+      setAmountInWords(formData.wordsOverride);
+    }
+  }, [formData.items, formData.wordsOverride, formData.gstPercentage, formData.rcmStatus]);
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleClearForm = () => {
+    setFormData(prev => ({
+      ...prev,
+      rcmStatus: 'Exempted',
+      debitNoteNo: '',
+      date: '',
+      originalInvoiceNo: '',
+      originalInvoiceDate: '',
+      otherRefs: '',
+      consigneeName: '',
+      consigneeAddress: '',
+      consigneeGst: '',
+      consigneeState: '',
+      consigneeEmail: '',
+      vesselFlightNo: '',
+      placeOfReceipt: '',
+      portOfLoading: '',
+      portOfDischarge: '',
+      ctns: '',
+      cbm: '',
+      weight: '',
+      items: [
+        { particulars: '', quantity: '', rate: '', per: '', amount: '' }
+      ],
+      roundOff: '',
+      gstCategory: 'exempted',
+      wordsOverride: ''
+    }));
+  };
+
+  const handleItemChange = (index, field, value) => {
+    const newItems = [...formData.items];
+    newItems[index] = {
+      ...newItems[index],
+      [field]: value
+    };
+
+    // Automatically calculate amount in form row when Qty or Rate changes
+    if (field === 'quantity' || field === 'rate') {
+      const qStr = field === 'quantity' ? value : newItems[index].quantity;
+      const rStr = field === 'rate' ? value : newItems[index].rate;
+      const qClean = (qStr || '').toString().replace(/[^0-9.]/g, '');
+      const rClean = (rStr || '').toString().replace(/[^0-9.]/g, '');
+      const q = parseFloat(qClean) || 0;
+      const r = parseFloat(rClean) || 0;
+      if (q > 0 && r > 0) {
+        newItems[index].amount = (q * r).toString();
+      }
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      items: newItems
+    }));
+  };
+
+  const addItemRow = () => {
+    setFormData(prev => ({
+      ...prev,
+      items: [...prev.items, { particulars: '', quantity: '', rate: '', per: '', amount: '' }]
+    }));
+  };
+
+  const removeItemRow = (index) => {
+    if (formData.items.length <= 1) return;
+    const newItems = formData.items.filter((_, idx) => idx !== index);
+    setFormData(prev => ({
+      ...prev,
+      items: newItems
+    }));
+  };
+
+  const handleSaveInvoice = async () => {
+    const newInvoiceObj = {
+      ...formData,
+      id: formData.debitNoteNo || `DN-${Date.now().toString().slice(-5)}`,
+      consignee: formData.consigneeName,
+      date: formData.date,
+      amount: totalAmount,
+      status: 'pending',
+      createdAt: Date.now()
+    };
+
+    try {
+      await setDoc(doc(db, 'invoices', newInvoiceObj.id), newInvoiceObj);
+      triggerToast('Invoice saved successfully!');
+    } catch (err) {
+      console.error("Error saving invoice to Firestore:", err);
+      // Fallback
+      let updated;
+      if (invoices.some(inv => inv.id === newInvoiceObj.id)) {
+        updated = invoices.map(inv => inv.id === newInvoiceObj.id ? newInvoiceObj : inv);
+      } else {
+        updated = [newInvoiceObj, ...invoices];
+      }
+      setInvoices(updated);
+      localStorage.setItem('svat_saved_invoices', JSON.stringify(updated));
+      triggerToast('Invoice saved locally!');
+    }
+
+    // Save newly entered particulars to suggestion list auto-complete
+    const updatedSuggestions = [...suggestions];
+    let suggestionsChanged = false;
+    formData.items.forEach(item => {
+      const p = (item.particulars || '').trim();
+      if (p && !updatedSuggestions.includes(p)) {
+        updatedSuggestions.push(p);
+        suggestionsChanged = true;
+      }
+    });
+    if (suggestionsChanged) {
+      setSuggestions(updatedSuggestions);
+      localStorage.setItem('svat_particulars_suggestions', JSON.stringify(updatedSuggestions));
+      try {
+        await setDoc(doc(db, 'suggestions', 'particulars'), { list: updatedSuggestions });
+      } catch (err) {
+        console.error("Error saving suggestions to Firestore:", err);
+      }
+    }
+
+    // Save newly entered fields to suggestions registry
+    saveToRegistry({
+      cities: [formData.placeOfReceipt, formData.portOfLoading, formData.portOfDischarge],
+      consignees: [formData.consigneeName],
+      addresses: [formData.consigneeAddress],
+      gsts: [formData.consigneeGst],
+      states: [formData.consigneeState],
+      vessels: [formData.vesselFlightNo],
+      otherRefs: [formData.otherRefs],
+      banks: [formData.bankName],
+      accounts: [formData.bankAccount],
+      branches: [formData.bankBranch],
+      holders: [formData.bankHolderName],
+      invoices: [formData.originalInvoiceNo],
+      debitNotes: [formData.debitNoteNo]
+    });
+  };
+
+  const handleDownloadPDF = () => {
+    const element = document.querySelector('.invoice-preview-card');
+    if (!element) return;
+
+    // Save newly entered fields to suggestions registry on download
+    saveToRegistry({
+      cities: [formData.placeOfReceipt, formData.portOfLoading, formData.portOfDischarge],
+      consignees: [formData.consigneeName],
+      addresses: [formData.consigneeAddress],
+      gsts: [formData.consigneeGst],
+      states: [formData.consigneeState],
+      vessels: [formData.vesselFlightNo],
+      otherRefs: [formData.otherRefs],
+      banks: [formData.bankName],
+      accounts: [formData.bankAccount],
+      branches: [formData.bankBranch],
+      holders: [formData.bankHolderName],
+      invoices: [formData.originalInvoiceNo],
+      debitNotes: [formData.debitNoteNo]
+    });
+
+    // Replace slashes with underscores for safe filename
+    const filename = `${(formData.debitNoteNo || 'invoice').replace(/\//g, '_')}.pdf`;
+
+    const opt = {
+      margin: 0.15,
+      filename: filename,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 3.5, useCORS: true, logging: false },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    const scaleWrapper = document.getElementById('invoice-scale-wrapper');
+    if (scaleWrapper) {
+      scaleWrapper.style.transform = 'scale(1)';
+    }
+
+    window.html2pdf().set(opt).from(element).save().then(() => {
+      if (scaleWrapper) {
+        scaleWrapper.style.transform = `scale(${previewScale})`;
+      }
+    });
+  };
+
+  const handleLoadInvoice = (historyItem) => {
+    const normalized = { ...historyItem };
+    if (normalized.date && normalized.date.includes('/')) {
+      const parts = normalized.date.split('/');
+      normalized.date = `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    if (normalized.originalInvoiceDate && normalized.originalInvoiceDate.includes('/')) {
+      const parts = normalized.originalInvoiceDate.split('/');
+      normalized.originalInvoiceDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    setFormData({
+      ...DEFAULT_INVOICE,
+      ...normalized
+    });
+    setActiveTab('creator');
+  };
+
+  const confirmDelete = async () => {
+    const { type, id } = deleteConfirm;
+    if (type === 'dn') {
+      try {
+        await deleteDoc(doc(db, 'invoices', id));
+        triggerToast('Invoice deleted successfully!');
+      } catch (err) {
+        console.error("Error deleting invoice:", err);
+        const updated = invoices.filter(inv => inv.id !== id);
+        setInvoices(updated);
+        localStorage.setItem('svat_saved_invoices', JSON.stringify(updated));
+        triggerToast('Invoice deleted locally!');
+      }
+    } else if (type === 'lr') {
+      try {
+        await deleteDoc(doc(db, 'lorry_receipts', id));
+        triggerToast('Lorry Receipt deleted successfully!');
+      } catch (err) {
+        console.error("Error deleting LR:", err);
+        const updated = savedLrs.filter(lr => lr.id !== id);
+        setSavedLrs(updated);
+        localStorage.setItem('svat_saved_lrs', JSON.stringify(updated));
+        triggerToast('Lorry Receipt deleted locally!');
+      }
+    } else if (type === 'quote') {
+      try {
+        await deleteDoc(doc(db, 'quotations', id));
+        triggerToast('Quotation deleted successfully!');
+      } catch (err) {
+        console.error("Error deleting quotation:", err);
+        const updated = savedQuotations.filter(q => q.id !== id);
+        setSavedQuotations(updated);
+        localStorage.setItem('svat_saved_quotations', JSON.stringify(updated));
+        triggerToast('Quotation deleted locally!');
+      }
+    }
+    setDeleteConfirm({ show: false, type: '', id: null });
+  };
+
+  // Calculate dynamic charts data based on state variables: invoices, savedLrs, savedQuotations
+  // Chart 1: Revenue Trends (aggregated by Jan-Dec calendar months)
+  const chartDataPoints = (() => {
+    const getInvoiceMonthIndex = (dateStr) => {
+      if (!dateStr) return -1;
+      const str = dateStr.toLowerCase();
+      const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+      for (let i = 0; i < 12; i++) {
+        if (str.includes(months[i])) return i;
+      }
+      const parts = str.split(/[-/ ]+/);
+      if (parts.length === 3) {
+        if (parts[0].length === 4) {
+          const m = parseInt(parts[1], 10);
+          if (m >= 1 && m <= 12) return m - 1;
+        }
+        const m = parseInt(parts[1], 10);
+        if (m >= 1 && m <= 12) return m - 1;
+      }
+      try {
+        const d = new Date(dateStr);
+        if (!isNaN(d.getTime())) return d.getMonth();
+      } catch (e) { }
+      return -1;
+    };
+
+    const monthlyRevenue = Array(12).fill(0);
+    // Accumulate invoice amounts by month
+    invoices.forEach((inv) => {
+      const monthIdx = getInvoiceMonthIndex(inv.date);
+      if (monthIdx >= 0 && monthIdx < 12) {
+        monthlyRevenue[monthIdx] += Number(inv.amount) || 0;
+      }
+    });
+
+    const monthlyLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const hasRealData = monthlyRevenue.some(amt => amt > 0);
+
+    // Map to coordinates (X from 40 to 480, Y from 180 to 30)
+    const points = monthlyLabels.map((label, idx) => {
+      const amt = hasRealData ? monthlyRevenue[idx] : (15000 + (idx % 3) * 12000 + (idx % 5) * 8000);
+      return { label, amount: amt };
+    });
+
+    const maxVal = Math.max(...points.map(p => p.amount), 10000);
+
+    return points.map((item, idx) => {
+      const x = 40 + idx * 40;
+      const y = 180 - (item.amount / maxVal) * 140;
+      return { x, y, label: item.label, amount: item.amount, isReal: hasRealData && monthlyRevenue[idx] > 0 };
+    });
+  })();
+
+  // Generate SVG path strings
+  const linePathD = chartDataPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x},${p.y}`).join(' ');
+  const areaPathD = chartDataPoints.length > 0
+    ? `${linePathD} L ${chartDataPoints[chartDataPoints.length - 1].x},180 L ${chartDataPoints[0].x},180 Z`
+    : '';
+
+  // Chart 2: Cargo Distribution based on actual counts
+  const donutSegments = (() => {
+    const invCount = invoices.length;
+    const lrCount = savedLrs.length;
+    const expCount = savedQuotations.filter(q => q.type === 'export').length;
+    const domCount = savedQuotations.filter(q => q.type === 'domestic').length;
+
+    const totalItems = invCount + lrCount + expCount + domCount;
+
+    const parts = totalItems > 0 ? [
+      { label: 'Invoices', count: invCount, color: 'var(--primary)', pct: Math.round((invCount / totalItems) * 100) },
+      { label: 'Lorry Receipts', count: lrCount, color: 'var(--text-dark)', pct: Math.round((lrCount / totalItems) * 100) },
+      { label: 'Export Quotes', count: expCount, color: '#64748B', pct: Math.round((expCount / totalItems) * 100) },
+      { label: 'Domestic Quotes', count: domCount, color: '#cbd5e1', pct: Math.round((domCount / totalItems) * 100) }
+    ] : [
+      { label: 'Invoices', count: 4, color: 'var(--primary)', pct: 40 },
+      { label: 'Lorry Receipts', count: 3, color: 'var(--text-dark)', pct: 30 },
+      { label: 'Export Quotes', count: 2, color: '#64748B', pct: 20 },
+      { label: 'Domestic Quotes', count: 1, color: '#cbd5e1', pct: 10 }
+    ];
+
+    // Recalculate segment percentages to make sure they sum up to 100
+    const totalPct = parts.reduce((a, b) => a + b.pct, 0);
+    if (totalPct !== 100 && totalPct > 0) {
+      const nonZeroIdx = parts.findIndex(p => p.pct > 0);
+      if (nonZeroIdx !== -1) {
+        parts[nonZeroIdx].pct += (100 - totalPct);
+      }
+    }
+
+    const circumference = 314.16;
+    let currentOffset = 0;
+    return parts.map((d) => {
+      const len = (d.pct / 100) * circumference;
+      const offset = currentOffset;
+      currentOffset -= len;
+      return {
+        ...d,
+        dasharray: `${len} ${circumference}`,
+        offset: offset
+      };
+    });
+  })();
+
+  // Determine Title based on GST percentage
+  const gstPct = parseFloat(formData.gstPercentage) || 0;
+  const billTitle = gstPct > 0 ? "Tax Invoice" : "Bill Of Supply";
+  const displayCgstRate = gstPct / 2;
+  const displaySgstRate = gstPct / 2;
+
+  return (
+    <div className="dashboard-layout">
+      {/* Mobile Top Header */}
+      <div className="mobile-dashboard-header">
+        <div className="logo-container" style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            backgroundColor: '#FFFFFF',
+            border: '1px solid rgba(0, 0, 0, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            padding: '2px',
+            flexShrink: 0
+          }}>
+            <img
+              src="/logo.png"
+              alt="LT Logo"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain'
+              }}
+            />
+          </div>
+          <span className="logo-text">LT</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Arul</span>
+          <div className="user-avatar-mobile">A</div>
+        </div>
+      </div>
+
+      {/* Sidebar Panel */}
+      <aside className="sidebar">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '0.5rem 0 1rem 0' }}>
+            <div style={{
+              width: '85px',
+              height: '85px',
+              borderRadius: '50%',
+              backgroundColor: '#FFFFFF',
+              border: '2px solid rgba(255, 255, 255, 0.85)',
+              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.08), inset 0 2px 4px rgba(0,0,0,0.03)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+              padding: '6px'
+            }}>
+              <img
+                src="/logo.png"
+                alt="LT Logo"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  filter: 'contrast(1.05)'
+                }}
+              />
+            </div>
+          </div>
+
+          <nav className="sidebar-menu">
+            <li className="sidebar-item">
+              <button
+                className={`sidebar-link ${activeTab === 'overview' ? 'active' : ''}`}
+                onClick={() => handleTabChange('overview')}
+              >
+                <LayoutDashboard className="sidebar-icon" />
+                Overview
+              </button>
+            </li>
+            <li className="sidebar-item">
+              <button
+                className={`sidebar-link ${activeTab === 'creator' ? 'active' : ''}`}
+                onClick={() => handleTabChange('creator')}
+              >
+                <FileText className="sidebar-icon" />
+                Invoice Creator
+              </button>
+            </li>
+            <li className="sidebar-item">
+              <button
+                className={`sidebar-link ${activeTab === 'lr' ? 'active' : ''}`}
+                onClick={() => handleTabChange('lr')}
+              >
+                <Truck className="sidebar-icon" />
+                LR Creator
+              </button>
+            </li>
+            <li className="sidebar-item" style={{ flexDirection: 'column', alignItems: 'flex-start', padding: 0 }}>
+              <button
+                className={`sidebar-link ${activeTab.startsWith('quotation') ? 'active' : ''}`}
+                onClick={() => setIsQuotationMenuOpen(!isQuotationMenuOpen)}
+                style={{ width: '100%', justifyContent: 'space-between', display: 'flex', padding: '0.75rem 1rem' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <FileText className="sidebar-icon" />
+                  Quotation
+                </div>
+                <span style={{ fontSize: '0.75rem' }}>{isQuotationMenuOpen ? '▼' : '▶'}</span>
+              </button>
+
+              {isQuotationMenuOpen && (
+                <div style={{ paddingLeft: '2.5rem', display: 'flex', flexDirection: 'column', width: '100%', marginTop: '0.25rem' }}>
+                  <button
+                    className={`sidebar-link ${activeTab === 'quotation-export' ? 'active' : ''}`}
+                    onClick={() => handleTabChange('quotation-export')}
+                    style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', width: '100%', justifyContent: 'flex-start', backgroundColor: 'transparent', color: activeTab === 'quotation-export' ? '#E53935' : 'var(--text-secondary)' }}
+                  >
+                    Export
+                  </button>
+                  <button
+                    className={`sidebar-link ${activeTab === 'quotation-domestic' ? 'active' : ''}`}
+                    onClick={() => handleTabChange('quotation-domestic')}
+                    style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', width: '100%', justifyContent: 'flex-start', backgroundColor: 'transparent', color: activeTab === 'quotation-domestic' ? '#E53935' : 'var(--text-secondary)' }}
+                  >
+                    Domestic
+                  </button>
+                </div>
+              )}
+            </li>
+            <li className="sidebar-item">
+              <button
+                className={`sidebar-link ${activeTab === 'history' ? 'active' : ''}`}
+                onClick={() => handleTabChange('history')}
+              >
+                <History className="sidebar-icon" />
+                History Registry
+              </button>
+            </li>
+          </nav>
+        </div>
+
+        <div className="sidebar-user">
+          <div className="user-info">
+            <div className="user-avatar">A</div>
+            <div className="user-details">
+              <p className="user-name">Arul</p>
+              <p className="user-role">Billing Manager</p>
+            </div>
+          </div>
+          <button onClick={() => setShowLogoutConfirm(true)} className="btn-logout" title="Sign Out">
+            <LogOut size={20} />
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Panel Content */}
+      <main className="dashboard-content">
+        {/* Quotation Tab */}
+        {activeTab.startsWith('quotation') && (
+          <div style={{ padding: '20px', display: 'flex', justifyContent: 'center' }}>
+            <Quotation type={activeTab === 'quotation-export' ? 'export' : 'domestic'} loadedData={loadedQuotation} triggerToast={triggerToast} />
+          </div>
+        )}
+        {/* Overview Tab */}
+        {activeTab === 'overview' && (
+          <div>
+            <div className="dashboard-header" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="page-title-container" style={{ margin: 0 }}>
+                <span className="page-sub-heading">
+                  <span className="page-brand-dot"></span>
+                  LOGISTICS & BILLING
+                </span>
+                <h1 className="page-main-heading">DASHBOARD OVERVIEW</h1>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0, 180, 216, 0.1)', padding: '0.4rem 0.9rem', borderRadius: '50px', border: '1px solid rgba(0, 180, 216, 0.2)' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block' }}></span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-dark)' }}>Live Sync Active</span>
+              </div>
+            </div>
+
+            {/* 4 Clean Stat Cards Without Icon Badges */}
+            <div className="overview-grid" style={{ marginBottom: '2rem' }}>
+              {/* Card 1: Total Invoiced */}
+              <div className="overview-card">
+                <div className="overview-card-info">
+                  <p className="overview-card-label">Total Invoiced</p>
+                  <p className="overview-card-value">₹{(invoices.reduce((a, b) => a + Number(b.amount || 0), 0)).toLocaleString()}</p>
+                </div>
+              </div>
+
+              {/* Card 2: Invoices Issued */}
+              <div className="overview-card">
+                <div className="overview-card-info">
+                  <p className="overview-card-label">Invoices Issued</p>
+                  <p className="overview-card-value">{invoices.length}</p>
+                </div>
+              </div>
+
+              {/* Card 3: Lorry Receipts (LR) */}
+              <div className="overview-card">
+                <div className="overview-card-info">
+                  <p className="overview-card-label">Lorry Receipts (LR)</p>
+                  <p className="overview-card-value">{savedLrs.length}</p>
+                </div>
+              </div>
+
+              {/* Card 4: Quotations Generated */}
+              <div className="overview-card">
+                <div className="overview-card-info">
+                  <p className="overview-card-label">Quotations Generated</p>
+                  <p className="overview-card-value">{savedQuotations.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Action Shortcuts */}
+            <div className="overview-card" style={{ display: 'block', textAlign: 'left', padding: '1.75rem 2rem', marginBottom: '2rem' }}>
+              <h3 style={{ marginBottom: '1.25rem', fontWeight: 700, color: 'var(--text-dark)', fontSize: '1.1rem', letterSpacing: '0.5px' }}>Quick Operations</h3>
+              <div className="quick-actions-row">
+                <button className="btn-primary" onClick={() => { handleClearForm(); setActiveTab('creator'); }}>
+                  <Plus size={18} /> Create Invoice
+                </button>
+                <button className="btn-primary" onClick={() => { setLoadedLr(null); setActiveTab('lr'); }}>
+                  <Plus size={18} /> Create Lorry Receipt (LR)
+                </button>
+                <button className="btn-primary" onClick={() => { setLoadedQuotation(null); setActiveTab('quotation-export'); }}>
+                  <Plus size={18} /> Create Quotation
+                </button>
+                <button className="btn-outline" onClick={() => setActiveTab('history')}>
+                  <History size={18} /> View History Registry
+                </button>
+              </div>
+            </div>
+
+            {/* Advanced Interactive Analytics Section */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem', marginBottom: '2.5rem' }}>
+              
+              {/* Chart 1: Advanced Revenue Scale & Monthly Freight Volume Graph */}
+              <div className="overview-card" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '1.75rem', position: 'relative' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-dark)' }}>Revenue & Dispatch Analytics</h3>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>Consolidated monthly freight movement vs total billing (₹)</p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', fontSize: '0.75rem' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dark)', fontWeight: 700 }}>
+                      <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#00B4D8', boxShadow: '0 0 8px rgba(0, 180, 216, 0.6)' }}></span> Revenue (₹)
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', fontWeight: 700 }}>
+                      <span style={{ width: '10px', height: '10px', borderRadius: '3px', backgroundColor: 'rgba(6, 182, 212, 0.25)' }}></span> Volume
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ position: 'relative', width: '100%', height: '250px' }}>
+                  <svg viewBox="0 0 520 230" width="100%" height="100%">
+                    <defs>
+                      <linearGradient id="advAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#00B4D8" stopOpacity="0.45" />
+                        <stop offset="100%" stopColor="#00B4D8" stopOpacity="0.0" />
+                      </linearGradient>
+                      <linearGradient id="advBarGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#06B6D4" stopOpacity="0.5" />
+                        <stop offset="100%" stopColor="#06B6D4" stopOpacity="0.05" />
+                      </linearGradient>
+                      <filter id="glowCircle" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="3" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                    </defs>
+
+                    {/* Dotted Horizontal Gridlines & Y-Axis Scale */}
+                    <g fill="var(--text-muted)" fontSize="9" fontWeight="700" textAnchor="end">
+                      <text x="36" y="34">₹1.5L</text>
+                      <line x1="42" y1="30" x2="500" y2="30" stroke="rgba(0,180,216,0.12)" strokeDasharray="4,4" />
+
+                      <text x="36" y="84">₹1.0L</text>
+                      <line x1="42" y1="80" x2="500" y2="80" stroke="rgba(0,180,216,0.12)" strokeDasharray="4,4" />
+
+                      <text x="36" y="134">₹50K</text>
+                      <line x1="42" y1="130" x2="500" y2="130" stroke="rgba(0,180,216,0.12)" strokeDasharray="4,4" />
+
+                      <text x="36" y="184">₹0</text>
+                      <line x1="42" y1="180" x2="500" y2="180" stroke="rgba(0,180,216,0.3)" strokeWidth="1.5" />
+                    </g>
+
+                    {/* Gradient Volume Columns */}
+                    {chartDataPoints.map((pt, idx) => {
+                      const barH = Math.max(12, 180 - pt.y);
+                      return (
+                        <rect
+                          key={`adv-bar-${idx}`}
+                          x={pt.x - 11}
+                          y={pt.y}
+                          width="22"
+                          height={barH}
+                          rx="5"
+                          fill="url(#advBarGrad)"
+                        />
+                      );
+                    })}
+
+                    {/* Gradient Area Fill */}
+                    {areaPathD && <path d={areaPathD} fill="url(#advAreaGrad)" />}
+
+                    {/* Primary Smooth Curve Line */}
+                    {linePathD && <path d={linePathD} fill="none" stroke="#00A8C6" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />}
+
+                    {/* Interactive Glowing Rings */}
+                    {chartDataPoints.map((pt, idx) => (
+                      <g key={`adv-pt-${idx}`}>
+                        <circle cx={pt.x} cy={pt.y} r="7" fill="#FFFFFF" stroke="#00A8C6" strokeWidth="3" filter="url(#glowCircle)" />
+                        <circle cx={pt.x} cy={pt.y} r="3" fill="#00A8C6" />
+                        <title>{`${pt.label}: ₹${pt.amount.toLocaleString()} Revenue`}</title>
+                      </g>
+                    ))}
+
+                    {/* X-Axis Month Labels */}
+                    {chartDataPoints.map((pt, idx) => (
+                      <text key={`adv-lbl-${idx}`} x={pt.x} y="204" fill="var(--text-muted)" fontSize="9.5" textAnchor="middle" fontWeight="700">
+                        {pt.label}
+                      </text>
+                    ))}
+                  </svg>
+                </div>
+              </div>
+
+              {/* Advanced Analytics Column */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                
+                {/* Chart 2: Database Distribution Radial Donut */}
+                <div className="overview-card" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '1.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-dark)' }}>Database Records Split</h3>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#00A8C6', background: 'rgba(0, 180, 216, 0.1)', padding: '2px 8px', borderRadius: '12px' }}>Live Split</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: '1.25rem' }}>
+                    <div style={{ position: 'relative', width: '125px', height: '125px', flexShrink: 0 }}>
+                      <svg width="100%" height="100%" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="48" fill="transparent" stroke="rgba(0, 180, 216, 0.08)" strokeWidth="14" />
+                        {donutSegments.map((segment, idx) => (
+                          segment.pct > 0 && (
+                            <circle
+                              key={`adv-donut-${idx}`}
+                              cx="60"
+                              cy="60"
+                              r="48"
+                              fill="transparent"
+                              stroke={segment.color}
+                              strokeWidth="14"
+                              strokeDasharray={segment.dasharray}
+                              strokeDashoffset={segment.offset}
+                              strokeLinecap="round"
+                              transform="rotate(-90 60 60)"
+                            />
+                          )
+                        ))}
+                      </svg>
+                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                        <span style={{ color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', fontSize: '0.55rem', fontWeight: 700 }}>Total Docs</span>
+                        <span style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-dark)', lineHeight: '1' }}>
+                          {invoices.length + savedLrs.length + savedQuotations.length}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Donut Segment Legend with Progress Indicators */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left', flex: 1 }}>
+                      {donutSegments.map((segment, idx) => (
+                        <div key={`adv-legend-${idx}`} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                            <span style={{ fontWeight: 600, color: 'var(--text-dark)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: segment.color, display: 'inline-block' }}></span>
+                              {segment.label}
+                            </span>
+                            <strong style={{ color: segment.color, fontWeight: 800 }}>{segment.pct}%</strong>
+                          </div>
+                          <div style={{ width: '100%', height: '4px', backgroundColor: 'rgba(0, 180, 216, 0.08)', borderRadius: '2px', overflow: 'hidden' }}>
+                            <div style={{ width: `${segment.pct}%`, height: '100%', backgroundColor: segment.color, borderRadius: '2px' }}></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Chart 3: Modern Operational Performance Progress Matrix */}
+                <div className="overview-card" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '1.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-dark)' }}>Operational Performance Matrix</h3>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#10B981', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '12px' }}>Health 99%</span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {/* Item 1: Paid Invoices */}
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--text-dark)' }}>Paid Invoices & Billing Settlement</span>
+                        <span style={{ fontWeight: 800, color: '#10B981' }}>75% Settled</span>
+                      </div>
+                      <div style={{ width: '100%', height: '7px', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: '75%', height: '100%', backgroundColor: '#10B981', borderRadius: '4px' }}></div>
+                      </div>
+                    </div>
+
+                    {/* Item 2: Pending Bills */}
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--text-dark)' }}>Pending Payment Verification</span>
+                        <span style={{ fontWeight: 800, color: '#F59E0B' }}>15% Pending</span>
+                      </div>
+                      <div style={{ width: '100%', height: '7px', backgroundColor: 'rgba(245, 158, 11, 0.12)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: '15%', height: '100%', backgroundColor: '#F59E0B', borderRadius: '4px' }}></div>
+                      </div>
+                    </div>
+
+                    {/* Item 3: Active Fleet Transit */}
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--text-dark)' }}>Active Fleet Freight Transit</span>
+                        <span style={{ fontWeight: 800, color: '#00B4D8' }}>10% Active</span>
+                      </div>
+                      <div style={{ width: '100%', height: '7px', backgroundColor: 'rgba(0, 180, 216, 0.12)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: '10%', height: '100%', backgroundColor: '#00B4D8', borderRadius: '4px' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* activeTab === 'creator' */}
+        {activeTab === 'creator' && (
+          <div>
+            <div className="page-title-container" style={{ marginBottom: '1.5rem' }}>
+              <span className="page-sub-heading">
+                <span className="page-brand-dot"></span>
+                TAX INVOICE & BILLING
+              </span>
+              <h1 className="page-main-heading">DEBIT NOTE CREATOR</h1>
+            </div>
+
+            <div className="invoice-workspace">
+              {/* Creator Form */}
+              <div className="invoice-form-container">
+
+                {/* Company Header (Fully Editable) */}
+                <h4 className="form-section-title">Billing Entity Details (Seller)</h4>
+                <div className="form-group">
+                  <label className="form-label">Company Name</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={formData.companyName}
+                    onChange={(e) => handleInputChange('companyName', e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Company Address</label>
+                  <textarea
+                    rows={2}
+                    className="form-input"
+                    value={formData.companyAddress}
+                    onChange={(e) => handleInputChange('companyAddress', e.target.value)}
+                  />
+                </div>
+                <div className="form-grid-2">
+                  <div className="form-group">
+                    <label className="form-label">GSTIN / UIN</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={formData.companyGst}
+                      onChange={(e) => handleInputChange('companyGst', e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">State & Code</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={formData.companyState}
+                      onChange={(e) => handleInputChange('companyState', e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="form-grid-2">
+                  <div className="form-group">
+                    <label className="form-label">Website</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={formData.companyWebsite}
+                      onChange={(e) => handleInputChange('companyWebsite', e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">E-Mail</label>
+                    <input
+                      type="email"
+                      className="form-input"
+                      value={formData.companyEmail}
+                      onChange={(e) => handleInputChange('companyEmail', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Consignee */}
+                <h4 className="form-section-title">Consignee (Buyer / Bill To)</h4>
+                <AutocompleteInput
+                  label="Consignee Name"
+                  value={formData.consigneeName}
+                  onChange={(e) => handleInputChange('consigneeName', e.target.value)}
+                  suggestions={suggestionsRegistry.consignees}
+                  onSelectSuggestion={(val) => handleInputChange('consigneeName', val)}
+                />
+                <AutocompleteTextarea
+                  label="Consignee Address"
+                  rows={2}
+                  value={formData.consigneeAddress}
+                  onChange={(e) => handleInputChange('consigneeAddress', e.target.value)}
+                  suggestions={suggestionsRegistry.addresses}
+                  onSelectSuggestion={(val) => handleInputChange('consigneeAddress', val)}
+                />
+                <div className="form-grid-2">
+                  <AutocompleteInput
+                    label="GSTIN / UIN"
+                    value={formData.consigneeGst}
+                    onChange={(e) => handleInputChange('consigneeGst', e.target.value)}
+                    suggestions={suggestionsRegistry.gsts}
+                    onSelectSuggestion={(val) => handleInputChange('consigneeGst', val)}
+                  />
+                  <AutocompleteInput
+                    label="State & Code"
+                    value={formData.consigneeState}
+                    onChange={(e) => handleInputChange('consigneeState', e.target.value)}
+                    suggestions={suggestionsRegistry.states}
+                    onSelectSuggestion={(val) => handleInputChange('consigneeState', val)}
+                  />
+                </div>
+
+                {/* Document Details */}
+                <h4 className="form-section-title">Invoice / Document Details</h4>
+                 <div className="form-grid-2">
+                  <AutocompleteInput
+                    label="Invoice No"
+                    value={formData.originalInvoiceNo}
+                    onChange={(e) => handleInputChange('originalInvoiceNo', e.target.value)}
+                    suggestions={suggestionsRegistry.invoices || []}
+                    onSelectSuggestion={(val) => handleInputChange('originalInvoiceNo', val)}
+                  />
+                  <div className="form-group">
+                    <label className="form-label">Invoice Date</label>
+                    <input
+                      type="date"
+                      className="form-input"
+                      value={formData.originalInvoiceDate}
+                      onChange={(e) => handleInputChange('originalInvoiceDate', e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="form-grid-2">
+                  <AutocompleteInput
+                    label="Debit Note No"
+                    value={formData.debitNoteNo}
+                    onChange={(e) => handleInputChange('debitNoteNo', e.target.value)}
+                    suggestions={suggestionsRegistry.debitNotes || []}
+                    onSelectSuggestion={(val) => handleInputChange('debitNoteNo', val)}
+                  />
+                  <div className="form-group">
+                    <label className="form-label">Debit Note Date</label>
+                    <input
+                      type="date"
+                      className="form-input"
+                      value={formData.date}
+                      onChange={(e) => handleInputChange('date', e.target.value)}
+                    />
+                  </div>
+                </div>
+                <AutocompleteInput
+                  label="Other References"
+                  value={formData.otherRefs}
+                  onChange={(e) => handleInputChange('otherRefs', e.target.value)}
+                  suggestions={suggestionsRegistry.otherRefs}
+                  onSelectSuggestion={(val) => handleInputChange('otherRefs', val)}
+                />
+
+                {/* Tax Setup */}
+                <h4 className="form-section-title">GST settings</h4>
+                <div className="form-grid-2" style={{ marginBottom: '1.25rem' }}>
+                  <div className="form-group">
+                    <label className="form-label">RCM Status</label>
+                    <select
+                      className="form-input"
+                      value={formData.rcmStatus || 'Exempted'}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormData(prev => ({
+                          ...prev,
+                          rcmStatus: val,
+                          gstPercentage: val === 'Exempted' ? '' : prev.gstPercentage
+                        }));
+                      }}
+                      style={{ height: '46px' }}
+                    >
+                      <option value="Exempted">Exempted</option>
+                      <option value="RCM">RCM</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">GST Percentage (%)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      className="form-input"
+                      placeholder="e.g. 5"
+                      disabled={formData.rcmStatus === 'Exempted'}
+                      value={formData.rcmStatus === 'Exempted' ? '' : formData.gstPercentage}
+                      onChange={(e) => handleInputChange('gstPercentage', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Transport Cargo */}
+                <h4 className="form-section-title">Transport & Shipment Details</h4>
+                <div className="form-grid-2">
+                  <AutocompleteInput
+                    label="Vessel / Flight / Truck No"
+                    value={formData.vesselFlightNo}
+                    onChange={(e) => handleInputChange('vesselFlightNo', e.target.value)}
+                    suggestions={suggestionsRegistry.vessels}
+                    onSelectSuggestion={(val) => handleInputChange('vesselFlightNo', val)}
+                  />
+                  <AutocompleteInput
+                    label="Place of Receipt by Shipper"
+                    value={formData.placeOfReceipt}
+                    onChange={(e) => handleInputChange('placeOfReceipt', e.target.value)}
+                    suggestions={suggestionsRegistry.cities}
+                    onSelectSuggestion={(val) => handleInputChange('placeOfReceipt', val)}
+                  />
+                </div>
+                <div className="form-grid-2">
+                  <AutocompleteInput
+                    label="City/Port of Loading"
+                    value={formData.portOfLoading}
+                    onChange={(e) => handleInputChange('portOfLoading', e.target.value)}
+                    suggestions={suggestionsRegistry.cities}
+                    onSelectSuggestion={(val) => handleInputChange('portOfLoading', val)}
+                  />
+                  <AutocompleteInput
+                    label="City/Port of Discharge"
+                    value={formData.portOfDischarge}
+                    onChange={(e) => handleInputChange('portOfDischarge', e.target.value)}
+                    suggestions={suggestionsRegistry.cities}
+                    onSelectSuggestion={(val) => handleInputChange('portOfDischarge', val)}
+                  />
+                </div>
+
+                <div className="form-grid-3">
+                  <div className="form-group">
+                    <label className="form-label">No of CTNS</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={formData.ctns}
+                      onChange={(e) => handleInputChange('ctns', e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">CBM Volume</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={formData.cbm}
+                      onChange={(e) => handleInputChange('cbm', e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Weight</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={formData.weight}
+                      onChange={(e) => handleInputChange('weight', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Dynamic Table Particulars */}
+                <h4 className="form-section-title">Billing Items Table</h4>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                  Provide Qty & Rate to multiply, or type a manual amount directly in the "Amount" field.
+                </p>
+                <table className="items-form-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '40%' }}>Particulars</th>
+                      <th style={{ width: '12%' }}>Qty</th>
+                      <th style={{ width: '15%' }}>Rate</th>
+                      <th style={{ width: '13%' }}>Per</th>
+                      <th style={{ width: '15%' }}>Amount</th>
+                      <th style={{ width: '5%' }}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {formData.items.map((item, idx) => (
+                      <tr key={idx}>
+                        <td style={{ position: 'relative' }}>
+                          <textarea
+                            rows={1}
+                            className="form-input"
+                            style={{ width: '100%', resize: 'vertical' }}
+                            value={item.particulars}
+                            onChange={(e) => {
+                              handleItemChange(idx, 'particulars', e.target.value);
+                              setActiveRowIdx(idx);
+                            }}
+                            onFocus={() => setActiveRowIdx(idx)}
+                            placeholder="Particulars"
+                          />
+                          {activeRowIdx === idx && (
+                            <SuggestionsDropdown
+                              query={item.particulars}
+                              list={suggestions}
+                              onSelect={(val) => {
+                                handleItemChange(idx, 'particulars', val);
+                                setActiveRowIdx(null);
+                              }}
+                              onClose={() => setActiveRowIdx(null)}
+                            />
+                          )}
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            className="form-input"
+                            style={{ width: '100%' }}
+                            value={item.quantity}
+                            onChange={(e) => handleItemChange(idx, 'quantity', e.target.value)}
+                            placeholder="Qty"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            className="form-input"
+                            style={{ width: '100%' }}
+                            value={item.rate}
+                            onChange={(e) => handleItemChange(idx, 'rate', e.target.value)}
+                            placeholder="Rate"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            className="form-input"
+                            style={{ width: '100%' }}
+                            value={item.per}
+                            onChange={(e) => handleItemChange(idx, 'per', e.target.value)}
+                            placeholder="per"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            className="form-input"
+                            style={{ width: '100%' }}
+                            value={item.amount}
+                            onChange={(e) => handleItemChange(idx, 'amount', e.target.value)}
+                            placeholder="Amount"
+                          />
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            className="btn-icon-danger"
+                            onClick={() => removeItemRow(idx)}
+                            disabled={formData.items.length <= 1}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <button type="button" className="btn-add-item" onClick={addItemRow}>
+                  <Plus size={16} /> Add Charge Row
+                </button>
+
+                {/* Bank Details (Fully Editable) */}
+                <h4 className="form-section-title">Bank Accounts Info</h4>
+                <AutocompleteInput
+                  label="A/c Holder Name"
+                  value={formData.bankHolderName}
+                  onChange={(e) => handleInputChange('bankHolderName', e.target.value)}
+                  suggestions={suggestionsRegistry.holders}
+                  onSelectSuggestion={(val) => handleInputChange('bankHolderName', val)}
+                />
+                <AutocompleteInput
+                  label="Bank Name"
+                  value={formData.bankName}
+                  onChange={(e) => handleInputChange('bankName', e.target.value)}
+                  suggestions={suggestionsRegistry.banks}
+                  onSelectSuggestion={(val) => handleInputChange('bankName', val)}
+                />
+                <div className="form-grid-2">
+                  <AutocompleteInput
+                    label="Account No"
+                    value={formData.bankAccount}
+                    onChange={(e) => handleInputChange('bankAccount', e.target.value)}
+                    suggestions={suggestionsRegistry.accounts}
+                    onSelectSuggestion={(val) => handleInputChange('bankAccount', val)}
+                  />
+                  <AutocompleteInput
+                    label="Branch & IFSC"
+                    value={formData.bankBranch}
+                    onChange={(e) => handleInputChange('bankBranch', e.target.value)}
+                    suggestions={suggestionsRegistry.branches}
+                    onSelectSuggestion={(val) => handleInputChange('bankBranch', val)}
+                  />
+                </div>
+
+                {/* Signatory (Fully Editable) */}
+                <h4 className="form-section-title">Signatory Details</h4>
+                <div className="form-group">
+                  <label className="form-label">Authorised Signatory Name</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={formData.signatoryName}
+                    onChange={(e) => handleInputChange('signatoryName', e.target.value)}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Amount Chargeable in Words (Override)</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Leave empty to calculate automatically"
+                    value={formData.wordsOverride}
+                    onChange={(e) => handleInputChange('wordsOverride', e.target.value)}
+                  />
+                </div>
+
+                {/* Bottom Actions Row inside Form */}
+                <div className="form-actions-row">
+                  <button className="btn-outline" style={{ flex: 1, padding: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', color: '#EF4444', borderColor: '#EF4444' }} onClick={handleClearForm}>
+                    <Trash2 size={20} /> Clear Form
+                  </button>
+                  <button className="btn-outline" style={{ flex: 1, padding: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} onClick={handleSaveInvoice}>
+                    <Save size={20} /> Save Invoice
+                  </button>
+                  <button className="btn-primary" style={{ flex: 1, padding: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }} onClick={handleDownloadPDF}>
+                    <Printer size={20} /> Download PDF
+                  </button>
+                </div>
+              </div> {/* End of invoice-form-container */}
+
+              {/* LIVE PREVIEW COLUMN (Visible on screen, responsive and scales automatically on mobile) */}
+              <div className="invoice-preview-container" ref={previewContainerRef} style={{ width: '100%', overflowX: 'hidden', overflowY: 'auto' }}>
+                <div id="invoice-scale-wrapper" style={{ transform: `scale(${previewScale})`, transformOrigin: 'top left', transition: 'transform 0.2s', width: '794px', height: `${cardHeight * previewScale}px` }}>
+                  {/* Printable Invoice Page (Restructured Grid matching the first image layout exactly) */}
+                  <div className="invoice-preview-card" ref={cardRef} style={{ padding: '2rem', backgroundColor: '#FFFFFF', color: '#000000', width: '794px', boxSizing: 'border-box' }}>
+                    <div className="bill-header" style={{
+                      border: '1.5px solid #000000',
+                      borderBottom: 'none',
+                      textAlign: 'center',
+                      fontWeight: '800',
+                      textTransform: 'uppercase',
+                      fontSize: '1.1rem',
+                      padding: '0.4rem'
+                    }}>
+                      {billTitle}
+                    </div>
+
+                    {/* Top Metadata Grid: divided into Left Half (Seller, Buyer) & Right Half (Note dates, cargo specs) */}
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1.1fr 1fr',
+                      border: '1.5px solid #000000',
+                      borderBottom: 'none'
+                    }}>
+                      {/* Left Column (Seller Info & Buyer Info) */}
+                      <div style={{ display: 'flex', flexDirection: 'column', borderRight: '1.5px solid #000000' }}>
+                        {/* Seller block */}
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: '110px 1fr',
+                          alignItems: 'center',
+                          padding: '8px',
+                          borderBottom: '1.5px solid #000000'
+                        }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                            <LTLogo />
+                          </div>
+                          <div style={{ paddingLeft: '10px', textAlign: 'left' }}>
+                            <div style={{ fontSize: '1.18rem', fontWeight: '800', color: '#0F6236', lineHeight: 1.1 }}>
+                              {formData.companyName}
+                            </div>
+                            <div style={{ fontSize: '0.72rem', fontWeight: '800', color: '#A82C2C', textTransform: 'uppercase', marginTop: '3px', letterSpacing: '0.5px' }}>Export cargo movers</div>
+                            <div style={{ fontSize: '0.68rem', marginTop: '3px', color: '#000000', lineHeight: 1.3 }}>
+                              {formData.companyAddress}<br />
+                              <strong>GSTIN/UIN:</strong> {formData.companyGst} | <strong>State Name:</strong> {formData.companyState}<br />
+                              <strong>Website:</strong> {formData.companyWebsite} | <strong>E-Mail:</strong> {formData.companyEmail}<br />
+                              <strong style={{ display: 'block', marginTop: '2px', color: '#1E293B', fontSize: '0.62rem' }}>ISO 9001:2015 Certified transport company</strong>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Buyer block */}
+                        <div style={{ padding: '8px', textAlign: 'left', flexGrow: 1, fontSize: '0.7rem', lineHeight: 1.4 }}>
+                          <div style={{ fontWeight: '700', textTransform: 'uppercase', textDecoration: 'underline', marginBottom: '2px' }}>Buyer (Bill to)</div>
+                          {formData.consigneeName && <div style={{ fontWeight: '900', fontSize: '0.82rem', color: '#000000', marginBottom: '2px' }}>{formData.consigneeName}</div>}
+                          {formData.consigneeAddress && <div>{formData.consigneeAddress}</div>}
+                          {(formData.consigneeGst || formData.consigneeState) && (
+                            <div style={{ marginTop: '2px' }}>
+                              {formData.consigneeGst && <span><strong>GSTIN/UIN:</strong> {formData.consigneeGst}</span>}
+                              {formData.consigneeGst && formData.consigneeState ? ' | ' : ''}
+                              {formData.consigneeState && <span><strong>State Name:</strong> {formData.consigneeState}</span>}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Right Column (Document specifications) */}
+                      <div style={{ display: 'flex', flexDirection: 'column', fontSize: '0.7rem', textAlign: 'left' }}>
+                        {/* Row 1 */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', borderBottom: '1.5px solid #000000', minHeight: '38px' }}>
+                          <div style={{ borderRight: '1.5px solid #000000', padding: '4px' }}>
+                            <span style={{ display: 'block', fontSize: '0.6rem', color: '#555' }}>Invoice No. & Date</span>
+                            <strong style={{ fontSize: '0.75rem' }}>
+                              {formData.originalInvoiceNo || ''} {formData.originalInvoiceDate ? `dt. ${formatDate(formData.originalInvoiceDate)}` : ''}
+                            </strong>
+                          </div>
+                          <div style={{ padding: '4px' }}>
+                            <span style={{ display: 'block', fontSize: '0.6rem', color: '#555' }}>Other References</span>
+                            <strong>{formData.otherRefs || ''}</strong>
+                          </div>
+                        </div>
+
+                        {/* Row 2 */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', borderBottom: '1.5px solid #000000', minHeight: '38px' }}>
+                          <div style={{ borderRight: '1.5px solid #000000', padding: '4px' }}>
+                            <span style={{ display: 'block', fontSize: '0.6rem', color: '#555' }}>Debit Note No. & Date</span>
+                            <strong style={{ fontSize: '0.75rem' }}>
+                              {formData.debitNoteNo || ''} {formData.date ? `dt. ${formatDate(formData.date)}` : ''}
+                            </strong>
+                          </div>
+                          <div style={{ padding: '4px' }}>
+                            <strong>&nbsp;</strong>
+                          </div>
+                        </div>
+
+                        {/* Row 3 */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', borderBottom: '1.5px solid #000000', minHeight: '38px' }}>
+                          <div style={{ borderRight: '1.5px solid #000000', padding: '4px' }}>
+                            <span style={{ display: 'block', fontSize: '0.6rem', color: '#555' }}>Vessel/Flight/Truck No.</span>
+                            <strong style={{ fontSize: '0.75rem' }}>{formData.vesselFlightNo}</strong>
+                          </div>
+                          <div style={{ padding: '4px' }}>
+                            <span style={{ display: 'block', fontSize: '0.6rem', color: '#555' }}>Place of receipt by shipper:</span>
+                            <strong>{formData.placeOfReceipt}</strong>
+                          </div>
+                        </div>
+
+                        {/* Row 4 */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', borderBottom: '1.5px solid #000000', minHeight: '38px' }}>
+                          <div style={{ borderRight: '1.5px solid #000000', padding: '4px' }}>
+                            <span style={{ display: 'block', fontSize: '0.6rem', color: '#555' }}>City/Port of Loading</span>
+                            <strong>{formData.portOfLoading}</strong>
+                          </div>
+                          <div style={{ padding: '4px' }}>
+                            <span style={{ display: 'block', fontSize: '0.6rem', color: '#555' }}>City/Port of Discharge</span>
+                            <strong>{formData.portOfDischarge}</strong>
+                          </div>
+                        </div>
+
+                        {/* Row 5 (Cargo dimensions) */}
+                        <div style={{ padding: '8px', lineHeight: 1.4, flexGrow: 1 }}>
+                          {formData.ctns && <span><strong>NO OF CTNS – </strong> {formData.ctns}<br /></span>}
+                          {formData.cbm && <span><strong>CBM – </strong> {formData.cbm}<br /></span>}
+                          {formData.weight && <span><strong>WEIGHT – </strong> {formData.weight}<br /></span>}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Main Grid Table */}
+                    <div className="bill-table-container" style={{ border: '1.5px solid #000000' }}>
+                      <table className="bill-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.72rem' }}>
+                        <thead>
+                          <tr>
+                            <th style={{ width: '8%', textAlign: 'center', borderRight: '1.5px solid #000000', borderBottom: '1.5px solid #000000', padding: '4px' }}>Sl No.</th>
+                            <th style={{ width: '45%', textAlign: 'center', borderRight: '1.5px solid #000000', borderBottom: '1.5px solid #000000', padding: '4px' }}>Particulars</th>
+                            <th style={{ width: '12%', textAlign: 'center', borderRight: '1.5px solid #000000', borderBottom: '1.5px solid #000000', padding: '4px' }}>Quantity</th>
+                            <th style={{ width: '15%', textAlign: 'center', borderRight: '1.5px solid #000000', borderBottom: '1.5px solid #000000', padding: '4px' }}>Rate</th>
+                            <th style={{ width: '10%', textAlign: 'center', borderRight: '1.5px solid #000000', borderBottom: '1.5px solid #000000', padding: '4px' }}>per</th>
+                            <th style={{ width: '10%', textAlign: 'center', borderBottom: '1.5px solid #000000', padding: '4px' }}>Amount</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {formData.items.map((item, idx) => {
+                            const cleanAmtStr = (item.amount || '').toString().replace(/[^0-9.]/g, '');
+                            const cleanQtyStr = (item.quantity || '').toString().replace(/[^0-9.]/g, '');
+                            const cleanRateStr = (item.rate || '').toString().replace(/[^0-9.]/g, '');
+
+                            const hasAmt = cleanAmtStr !== '' || (cleanQtyStr !== '' && cleanRateStr !== '');
+                            const amt = hasAmt
+                              ? (cleanAmtStr !== ''
+                                ? (parseFloat(cleanAmtStr) || 0)
+                                : (parseFloat(cleanQtyStr) || 0) * (parseFloat(cleanRateStr) || 0))
+                              : null;
+
+                            const qtyVal = cleanQtyStr !== '' ? parseFloat(cleanQtyStr) : null;
+                            const rateVal = cleanRateStr !== '' ? parseFloat(cleanRateStr) : null;
+                            const amtStr = amt !== null ? amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+
+                            return (
+                              <tr key={idx} className="bill-table-row">
+                                <td style={{ textAlign: 'center', borderRight: '1.5px solid #000000', padding: '6px' }}>{idx + 1}</td>
+                                <td style={{ whiteSpace: 'pre-line', borderRight: '1.5px solid #000000', padding: '6px', textAlign: 'left' }}>
+                                  <strong style={{ display: 'block', fontSize: '0.75rem' }}>{item.particulars}</strong>
+                                </td>
+                                <td style={{ textAlign: 'right', borderRight: '1.5px solid #000000', padding: '6px' }}>{qtyVal !== null ? qtyVal : ''}</td>
+                                <td style={{ textAlign: 'right', borderRight: '1.5px solid #000000', padding: '6px' }}>{rateVal !== null ? rateVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}</td>
+                                <td style={{ borderRight: '1.5px solid #000000', padding: '6px', textAlign: 'center' }}>{item.per || ''}</td>
+                                <td style={{ textAlign: 'right', fontWeight: 800, padding: '6px' }}>{amtStr}</td>
+                              </tr>
+                            );
+                          })}
+
+                          {/* Extra padding rows to keep height scaled like standard A4 template */}
+                          {Array.from({ length: Math.max(0, 6 - formData.items.length) }).map((_, idx) => (
+                            <tr key={`empty-${idx}`} className="bill-table-row" style={{ height: '32px' }}>
+                              <td style={{ borderRight: '1.5px solid #000000' }}></td>
+                              <td style={{ borderRight: '1.5px solid #000000' }}></td>
+                              <td style={{ borderRight: '1.5px solid #000000' }}></td>
+                              <td style={{ borderRight: '1.5px solid #000000' }}></td>
+                              <td style={{ borderRight: '1.5px solid #000000' }}></td>
+                              <td></td>
+                            </tr>
+                          ))}
+
+                          {/* Sub Total row (Always shown) */}
+                          <tr style={{ borderTop: '1.5px solid #000000', fontWeight: 'bold' }}>
+                            <td style={{ borderRight: '1.5px solid #000000', padding: '4px' }}></td>
+                            <td colSpan={4} style={{ borderRight: '1.5px solid #000000', textAlign: 'right', padding: '4px' }}>Sub Total</td>
+                            <td style={{ textAlign: 'right', padding: '4px' }}>{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                          </tr>
+
+                          {/* CGST row */}
+                          {cgstAmount > 0 && (
+                            <tr style={{ fontWeight: 'bold' }}>
+                              <td style={{ borderRight: '1.5px solid #000000', padding: '4px' }}></td>
+                              <td colSpan={4} style={{ borderRight: '1.5px solid #000000', textAlign: 'right', padding: '4px' }}>
+                                CGST ( {displayCgstRate ? `${displayCgstRate} %` : '        %'} )
+                              </td>
+                              <td style={{ textAlign: 'right', padding: '4px' }}>{cgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            </tr>
+                          )}
+
+                          {/* SGST row */}
+                          {sgstAmount > 0 && (
+                            <tr style={{ fontWeight: 'bold' }}>
+                              <td style={{ borderRight: '1.5px solid #000000', padding: '4px' }}></td>
+                              <td colSpan={4} style={{ borderRight: '1.5px solid #000000', textAlign: 'right', padding: '4px' }}>
+                                SGST ( {displaySgstRate ? `${displaySgstRate} %` : '        %'} )
+                              </td>
+                              <td style={{ textAlign: 'right', padding: '4px' }}>{sgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            </tr>
+                          )}
+
+                          {/* IGST row */}
+                          {igstAmount > 0 && (
+                            <tr style={{ fontWeight: 'bold' }}>
+                              <td style={{ borderRight: '1.5px solid #000000', padding: '4px' }}></td>
+                              <td colSpan={4} style={{ borderRight: '1.5px solid #000000', textAlign: 'right', padding: '4px' }}>
+                                IGST ( 0 % )
+                              </td>
+                              <td style={{ textAlign: 'right', padding: '4px' }}>{igstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            </tr>
+                          )}
+
+
+
+                          {/* Grand Total Row */}
+                          <tr style={{ borderTop: '1.5px solid #000000', fontWeight: '800', backgroundColor: '#E2E8F0' }}>
+                            <td style={{ borderRight: '1.5px solid #000000', padding: '5px' }}></td>
+                            <td colSpan={4} style={{ borderRight: '1.5px solid #000000', textAlign: 'right', padding: '5px', fontWeight: '800' }}>
+                              Grand Total
+                            </td>
+                            <td style={{ textAlign: 'right', padding: '5px', fontWeight: '800' }}>
+                              ₹ {totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* GST RCM Status Bar */}
+                    <div style={{
+                      border: '1.5px solid #000000',
+                      borderTop: 'none',
+                      padding: '5px 8px',
+                      fontSize: '0.72rem',
+                      fontWeight: '800',
+                      textAlign: 'left',
+                      backgroundColor: '#FFFFFF',
+                      lineHeight: 1.3
+                    }}>
+                      <span>Whether GST is payable on Reverse Charge basis (RCM): <strong>{
+                        formData.rcmStatus === 'RCM' ? 'Yes' : (formData.rcmStatus === 'No' ? 'No' : 'Exempted')
+                      }</strong></span>
+                    </div>
+
+                    {/* Bottom Section: Words block on left, Bank + Signatory on right */}
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '53% 47%',
+                      border: '1.5px solid #000000',
+                      borderTop: 'none',
+                      fontSize: '0.7rem',
+                      textAlign: 'left'
+                    }}>
+                      {/* Left Column: Amount in Words */}
+                      <div style={{
+                        padding: '8px',
+                        borderRight: '1.5px solid #000000',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'flex-start',
+                        minHeight: '170px'
+                      }}>
+                        <div style={{ marginBottom: '4px' }}>
+                          <span style={{ fontWeight: '700', fontSize: '0.72rem' }}>Amount Chargeable (in words):</span>
+                          <span style={{ float: 'right', fontStyle: 'italic', fontWeight: 'bold', fontSize: '0.62rem' }}>E. & O.E</span>
+                        </div>
+                        <strong style={{ fontSize: '0.78rem', textTransform: 'uppercase', lineHeight: '1.3' }}>
+                          {amountInWords}
+                        </strong>
+                      </div>
+
+                      {/* Right Column: Bank details (top) & Signatory (bottom) */}
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        {/* Bank Details */}
+                        <div style={{ padding: '8px', flexGrow: 1, lineHeight: '1.4' }}>
+                          <div style={{ fontWeight: '700', textDecoration: 'underline', marginBottom: '4px' }}>Company's Bank Details:</div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr' }}>
+                            <span>A/c Holder's Name</span>
+                            <strong>: {formData.bankHolderName}</strong>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr' }}>
+                            <span>Bank Name</span>
+                            <strong>: {formData.bankName}</strong>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr' }}>
+                            <span>A/c No.</span>
+                            <strong>: {formData.bankAccount}</strong>
+                          </div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr' }}>
+                            <span>Branch & IFS Code</span>
+                            <strong>: {formData.bankBranch}</strong>
+                          </div>
+                        </div>
+
+                        {/* Signatory Block */}
+                        <div style={{
+                          borderTop: '1.5px solid #000000',
+                          padding: '8px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          minHeight: '90px'
+                        }}>
+                          <div style={{ fontWeight: '700', textAlign: 'center', textTransform: 'uppercase' }}>
+                            for {formData.companyName}
+                          </div>
+                          <div style={{ textAlign: 'right', marginTop: 'auto' }}>
+                            <strong style={{ display: 'block', fontSize: '0.72rem', textAlign: 'right' }}>{formData.signatoryName}</strong>
+                            <span style={{ fontSize: '0.62rem', fontWeight: 'bold', display: 'block', color: '#444', textAlign: 'right', marginTop: '2px' }}>Authorised Signatory</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bill-disclaimer" style={{ textAlign: 'center', fontSize: '0.62rem', marginTop: '4px', fontStyle: 'italic' }}>
+                      This is a Computer Generated Document
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* LR Creator Tab */}
+        {activeTab === 'lr' && (
+          <LrCreator loadedLr={loadedLr} triggerToast={triggerToast} />
+        )}
+
+        {/* Unified History Tab */}
+        {activeTab === 'history' && (
+          <div>
+            <div className="page-title-container" style={{ marginBottom: '1.5rem' }}>
+              <span className="page-sub-heading">
+                <span className="page-brand-dot"></span>
+                DATABASE RECORDS
+              </span>
+              <h1 className="page-main-heading">HISTORY REGISTRY</h1>
+            </div>
+
+            {/* History Sub-tabs */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px', borderBottom: '1px solid rgba(0, 180, 216, 0.15)', paddingBottom: '12px' }}>
+              <button
+                onClick={() => setHistorySubTab('dn')}
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: '50px',
+                  backgroundColor: historySubTab === 'dn' ? '#00B4D8' : '#FFFFFF',
+                  color: historySubTab === 'dn' ? '#FFFFFF' : '#00A8C6',
+                  border: historySubTab === 'dn' ? 'none' : '1.5px solid rgba(0, 168, 198, 0.3)',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '0.85rem',
+                  boxShadow: historySubTab === 'dn' ? '0 4px 15px rgba(0, 180, 216, 0.35)' : 'none',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Debit Notes (DN)
+              </button>
+              <button
+                onClick={() => setHistorySubTab('lr')}
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: '50px',
+                  backgroundColor: historySubTab === 'lr' ? '#00B4D8' : '#FFFFFF',
+                  color: historySubTab === 'lr' ? '#FFFFFF' : '#00A8C6',
+                  border: historySubTab === 'lr' ? 'none' : '1.5px solid rgba(0, 168, 198, 0.3)',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '0.85rem',
+                  boxShadow: historySubTab === 'lr' ? '0 4px 15px rgba(0, 180, 216, 0.35)' : 'none',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Lorry Receipts (LR)
+              </button>
+              <button
+                onClick={() => setHistorySubTab('quote')}
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: '50px',
+                  backgroundColor: historySubTab === 'quote' ? '#00B4D8' : '#FFFFFF',
+                  color: historySubTab === 'quote' ? '#FFFFFF' : '#00A8C6',
+                  border: historySubTab === 'quote' ? 'none' : '1.5px solid rgba(0, 168, 198, 0.3)',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '0.85rem',
+                  boxShadow: historySubTab === 'quote' ? '0 4px 15px rgba(0, 180, 216, 0.35)' : 'none',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Quotations
+              </button>
+            </div>
+
+            {/* Invoices (Debit Notes) List */}
+            {historySubTab === 'dn' && (
+              <div className="history-list">
+                {invoices.length === 0 ? (
+                  <p style={{ color: 'var(--text-muted)', padding: '20px 0' }}>No Debit Notes (Invoices) found.</p>
+                ) : (
+                  invoices.map((inv) => (
+                    <div key={inv.id} className="history-item">
+                      <div className="history-left">
+                        <p className="history-code">{inv.id}</p>
+                        <p className="history-name">{inv.consignee || inv.consigneeName}</p>
+                        <p className="history-date">Generated: {inv.date}</p>
+                      </div>
+                      <div className="history-right">
+                        <span className={`badge-status ${inv.status || 'pending'}`}>{inv.status || 'pending'}</span>
+                        <span className="history-amount">₹{(inv.amount || 0).toLocaleString()}</span>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button className="btn-outline" onClick={() => handleLoadInvoice(inv)}>
+                            Edit / View
+                          </button>
+                          <button
+                            className="btn-outline"
+                            style={{ borderColor: '#EF4444', color: '#EF4444', padding: '6px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            onClick={() => setDeleteConfirm({ show: true, type: 'dn', id: inv.id })}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* Lorry Receipts (LR) List */}
+            {historySubTab === 'lr' && (
+              <div className="history-list">
+                {savedLrs.length === 0 ? (
+                  <p style={{ color: 'var(--text-muted)', padding: '20px 0' }}>No Lorry Receipts found.</p>
+                ) : (
+                  savedLrs.map((lr) => (
+                    <div key={lr.id} className="history-item">
+                      <div className="history-left">
+                        <p className="history-code">{lr.id}</p>
+                        <p className="history-name">From: {lr.consignor || 'Unknown'} | To: {lr.consignee || 'Unknown'}</p>
+                        <p className="history-date">Truck: {lr.truckNo || 'N/A'} | Date: {lr.date}</p>
+                      </div>
+                      <div className="history-right">
+                        <span className="history-amount">₹{(lr.amount || 0).toLocaleString()}</span>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button className="btn-outline" onClick={() => {
+                            setLoadedLr(lr);
+                            setActiveTab('lr');
+                          }}>
+                            Edit / View
+                          </button>
+                          <button
+                            className="btn-outline"
+                            style={{ borderColor: '#EF4444', color: '#EF4444', padding: '6px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            onClick={() => setDeleteConfirm({ show: true, type: 'lr', id: lr.id })}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* Quotations List */}
+            {historySubTab === 'quote' && (
+              <div className="history-list">
+                {savedQuotations.length === 0 ? (
+                  <p style={{ color: 'var(--text-muted)', padding: '20px 0' }}>No Quotations found.</p>
+                ) : (
+                  savedQuotations.map((quote) => (
+                    <div key={quote.id} className="history-item">
+                      <div className="history-left">
+                        <p className="history-code">{quote.id}</p>
+                        <p className="history-name">Route: {quote.from || 'Tirupur'} to {quote.to}</p>
+                        <p className="history-date">Type: {quote.type === 'export' ? 'Export' : 'Domestic'} | Date: {quote.date}</p>
+                      </div>
+                      <div className="history-right">
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button className="btn-outline" onClick={() => {
+                            setLoadedQuotation(quote);
+                            setActiveTab(quote.type === 'export' ? 'quotation-export' : 'quotation-domestic');
+                          }}>
+                            Edit / View
+                          </button>
+                          <button
+                            className="btn-outline"
+                            style={{ borderColor: '#EF4444', color: '#EF4444', padding: '6px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            onClick={() => setDeleteConfirm({ show: true, type: 'quote', id: quote.id })}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+          </div>
+        )}
+      </main>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="mobile-nav">
+        <button
+          className={`mobile-nav-link ${activeTab === 'overview' ? 'active' : ''}`}
+          onClick={() => handleTabChange('overview')}
+        >
+          <LayoutDashboard className="mobile-nav-icon" />
+          <span>Overview</span>
+        </button>
+        <button
+          className={`mobile-nav-link ${activeTab === 'creator' ? 'active' : ''}`}
+          onClick={() => handleTabChange('creator')}
+        >
+          <Plus className="mobile-nav-icon" />
+          <span>Create</span>
+        </button>
+        <button
+          className={`mobile-nav-link ${activeTab === 'lr' ? 'active' : ''}`}
+          onClick={() => handleTabChange('lr')}
+        >
+          <Truck className="mobile-nav-icon" />
+          <span>LR</span>
+        </button>
+        <button
+          className={`mobile-nav-link ${activeTab.startsWith('quotation') ? 'active' : ''}`}
+          onClick={() => setIsMobileQuoteMenuOpen(!isMobileQuoteMenuOpen)}
+        >
+          <FileText className="mobile-nav-icon" />
+          <span>Quote</span>
+        </button>
+        <button
+          className={`mobile-nav-link ${activeTab === 'history' ? 'active' : ''}`}
+          onClick={() => handleTabChange('history')}
+        >
+          <History className="mobile-nav-icon" />
+          <span>History</span>
+        </button>
+        <button className="mobile-nav-link logout" onClick={() => setShowLogoutConfirm(true)}>
+          <LogOut className="mobile-nav-icon" />
+          <span>Logout</span>
+        </button>
+      </div>
+
+      {/* Toast Notification */}
+      {toast.show && (
+        <div style={{
+          position: 'fixed',
+          bottom: '80px',
+          right: '24px',
+          backgroundColor: toast.type === 'success' ? '#22C55E' : '#EF4444',
+          color: '#fff',
+          padding: '12px 24px',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          zIndex: 2000,
+          fontWeight: 'bold',
+          fontSize: '0.9rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          pointerEvents: 'none'
+        }}>
+          <span>{toast.type === 'success' ? '✓' : '✗'}</span>
+          <span>{toast.message}</span>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm.show && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+          <div style={{ backgroundColor: '#FFFFFF', padding: '28px 24px', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.08)', color: 'var(--text-dark)', width: '340px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-dark)' }}>Delete Item</h3>
+            <p style={{ margin: '0 0 24px 0', fontSize: '0.95rem', color: 'var(--text-muted)' }}>
+              Are you sure you want to delete this {deleteConfirm.type === 'dn' ? 'Invoice' : deleteConfirm.type === 'lr' ? 'Lorry Receipt' : 'Quotation'}?
+            </p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button className="btn-outline" style={{ flex: 1, padding: '8px', fontSize: '0.85rem' }} onClick={() => setDeleteConfirm({ show: false, type: '', id: null })}>Cancel</button>
+              <button
+                className="btn-primary"
+                style={{ flex: 1, padding: '8px', fontSize: '0.85rem', backgroundColor: '#EF4444', borderColor: '#EF4444', color: '#fff' }}
+                onClick={confirmDelete}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+          <div style={{ backgroundColor: '#FFFFFF', padding: '28px 24px', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.08)', color: 'var(--text-dark)', width: '320px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-dark)' }}>Logout</h3>
+            <p style={{ margin: '0 0 24px 0', fontSize: '0.95rem', color: 'var(--text-muted)' }}>Are you sure you want to log out?</p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button className="btn-outline" style={{ flex: 1, padding: '8px', fontSize: '0.85rem' }} onClick={() => setShowLogoutConfirm(false)}>No</button>
+              <button className="btn-primary" style={{ flex: 1, padding: '8px', fontSize: '0.85rem' }} onClick={onLogout}>Yes, Logout</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Quote Submenu Popover */}
+      {isMobileQuoteMenuOpen && (
+        <>
+          <div
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999, backgroundColor: 'transparent' }}
+            onClick={() => setIsMobileQuoteMenuOpen(false)}
+          />
+          <div style={{
+            position: 'fixed',
+            bottom: '75px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: '#FFFFFF',
+            borderRadius: '16px',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15)',
+            border: '1.5px solid rgba(0, 0, 0, 0.08)',
+            zIndex: 1000,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            width: '220px',
+            padding: '4px'
+          }}>
+            <button
+              style={{
+                padding: '12px 16px',
+                background: activeTab === 'quotation-export' ? 'var(--text-dark)' : 'transparent',
+                color: activeTab === 'quotation-export' ? '#FFFFFF' : 'var(--text-dark)',
+                border: 'none',
+                borderRadius: '12px',
+                fontWeight: 'bold',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                textAlign: 'center',
+                transition: 'all 0.2s'
+              }}
+              onClick={() => {
+                handleTabChange('quotation-export');
+                setIsMobileQuoteMenuOpen(false);
+              }}
+            >
+              Export Quotation
+            </button>
+            <button
+              style={{
+                padding: '12px 16px',
+                background: activeTab === 'quotation-domestic' ? 'var(--text-dark)' : 'transparent',
+                color: activeTab === 'quotation-domestic' ? '#FFFFFF' : 'var(--text-dark)',
+                border: 'none',
+                borderRadius: '12px',
+                marginTop: '4px',
+                fontWeight: 'bold',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                textAlign: 'center',
+                transition: 'all 0.2s'
+              }}
+              onClick={() => {
+                handleTabChange('quotation-domestic');
+                setIsMobileQuoteMenuOpen(false);
+              }}
+            >
+              Domestic Quotation
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
