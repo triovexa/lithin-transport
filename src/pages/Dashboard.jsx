@@ -41,8 +41,10 @@ const LTLogo = () => (
 
 // Indian Numbering System to Words conversion helper
 const numberToWords = (num) => {
+  if (num === null || num === undefined || isNaN(num) || num <= 0) return 'INR ZERO ONLY';
+
   const integerPart = Math.floor(num);
-  if (integerPart === 0) return 'INR ZERO ONLY';
+  const decimalPart = Math.round((num - integerPart) * 100);
 
   const a = ['', 'one ', 'two ', 'three ', 'four ', 'five ', 'six ', 'seven ', 'eight ', 'nine ', 'ten ', 'eleven ', 'twelve ', 'thirteen ', 'fourteen ', 'fifteen ', 'sixteen ', 'seventeen ', 'eighteen ', 'nineteen '];
   const b = ['', '', 'twenty ', 'thirty ', 'forty ', 'fifty ', 'sixty ', 'seventy ', 'eighty ', 'ninety '];
@@ -56,8 +58,13 @@ const numberToWords = (num) => {
     return formatWord(Math.floor(n / 10000000)) + 'crore ' + (n % 10000000 !== 0 ? formatWord(n % 10000000) : '');
   };
 
-  const words = formatWord(integerPart);
-  return 'INR ' + words.trim().replace(/\s+/g, ' ').toUpperCase() + ' ONLY';
+  let words = integerPart > 0 ? formatWord(integerPart).trim() : 'zero';
+  let result = 'INR ' + words.replace(/\s+/g, ' ').toUpperCase();
+
+  if (decimalPart > 0) {
+    result += ' AND ' + formatWord(decimalPart).trim().replace(/\s+/g, ' ').toUpperCase() + ' PAISE';
+  }
+  return result + ' ONLY';
 };
 
 // Autocomplete suggestions dropdown element
@@ -509,14 +516,19 @@ export default function Dashboard({ onLogout }) {
   useEffect(() => {
     const calculatedSubtotal = formData.items.reduce((acc, item) => {
       const cleanAmtStr = (item.amount || '').toString().replace(/[^0-9.]/g, '');
-      if (cleanAmtStr !== '') {
-        return acc + (parseFloat(cleanAmtStr) || 0);
-      }
       const cleanQtyStr = (item.quantity || '').toString().replace(/[^0-9.]/g, '');
       const cleanRateStr = (item.rate || '').toString().replace(/[^0-9.]/g, '');
-      const q = parseFloat(cleanQtyStr) || 0;
-      const r = parseFloat(cleanRateStr) || 0;
-      return acc + (q * r);
+
+      const amtVal = cleanAmtStr !== '' ? parseFloat(cleanAmtStr) : NaN;
+      const qVal = cleanQtyStr !== '' ? parseFloat(cleanQtyStr) : 0;
+      const rVal = cleanRateStr !== '' ? parseFloat(cleanRateStr) : 0;
+
+      if (!isNaN(amtVal)) {
+        return acc + amtVal;
+      } else if (qVal > 0 && rVal > 0) {
+        return acc + (qVal * rVal);
+      }
+      return acc;
     }, 0);
 
     setSubtotal(calculatedSubtotal);
@@ -526,10 +538,10 @@ export default function Dashboard({ onLogout }) {
     const cgstRate = gstPct / 2;
     const sgstRate = gstPct / 2;
 
+    // Only add to grand total if RCM status is 'No' (Normal GST)
     const cgst = (calculatedSubtotal * cgstRate) / 100;
     const sgst = (calculatedSubtotal * sgstRate) / 100;
 
-    // Only add to grand total if RCM status is 'No' (Normal GST)
     const grandTotal = rcmStatus === 'No'
       ? (calculatedSubtotal + cgst + sgst)
       : calculatedSubtotal;
@@ -590,16 +602,18 @@ export default function Dashboard({ onLogout }) {
       [field]: value
     };
 
-    // Automatically calculate amount in form row when Qty or Rate changes
+    // Automatically calculate or reset amount in form row when Qty or Rate changes
     if (field === 'quantity' || field === 'rate') {
       const qStr = field === 'quantity' ? value : newItems[index].quantity;
       const rStr = field === 'rate' ? value : newItems[index].rate;
       const qClean = (qStr || '').toString().replace(/[^0-9.]/g, '');
       const rClean = (rStr || '').toString().replace(/[^0-9.]/g, '');
-      const q = parseFloat(qClean) || 0;
-      const r = parseFloat(rClean) || 0;
-      if (q > 0 && r > 0) {
+      const q = parseFloat(qClean);
+      const r = parseFloat(rClean);
+      if (!isNaN(q) && !isNaN(r) && q > 0 && r > 0) {
         newItems[index].amount = (q * r).toString();
+      } else {
+        newItems[index].amount = '';
       }
     }
 
@@ -632,7 +646,6 @@ export default function Dashboard({ onLogout }) {
       consignee: formData.consigneeName,
       date: formData.date,
       amount: totalAmount,
-      status: 'pending',
       createdAt: Date.now()
     };
 
@@ -1320,14 +1333,14 @@ export default function Dashboard({ onLogout }) {
                       </div>
                     </div>
 
-                    {/* Item 2: Pending Bills */}
+                    {/* Item 2: Verified Bills */}
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
-                        <span style={{ fontWeight: 600, color: 'var(--text-dark)' }}>Pending Payment Verification</span>
-                        <span style={{ fontWeight: 800, color: '#F59E0B' }}>15% Pending</span>
+                        <span style={{ fontWeight: 600, color: 'var(--text-dark)' }}>Verified Payment Verification</span>
+                        <span style={{ fontWeight: 800, color: '#10B981' }}>100% Verified</span>
                       </div>
-                      <div style={{ width: '100%', height: '7px', backgroundColor: 'rgba(245, 158, 11, 0.12)', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{ width: '15%', height: '100%', backgroundColor: '#F59E0B', borderRadius: '4px' }}></div>
+                      <div style={{ width: '100%', height: '7px', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: '100%', height: '100%', backgroundColor: '#10B981', borderRadius: '4px' }}></div>
                       </div>
                     </div>
 
@@ -1471,12 +1484,20 @@ export default function Dashboard({ onLogout }) {
                   />
                   <div className="form-group">
                     <label className="form-label">Invoice Date</label>
-                    <input
-                      type="date"
-                      className="form-input"
-                      value={formData.originalInvoiceDate}
-                      onChange={(e) => handleInputChange('originalInvoiceDate', e.target.value)}
-                    />
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <input
+                        type="date"
+                        className="form-input"
+                        value={formData.originalInvoiceDate}
+                        onChange={(e) => handleInputChange('originalInvoiceDate', e.target.value)}
+                        onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (err) {} }}
+                        style={{ cursor: 'pointer', paddingRight: '36px' }}
+                      />
+                      <Calendar
+                        size={18}
+                        style={{ position: 'absolute', right: '12px', pointerEvents: 'none', color: '#00A8C6' }}
+                      />
+                    </div>
                   </div>
                 </div>
                 <div className="form-grid-2">
@@ -1489,12 +1510,20 @@ export default function Dashboard({ onLogout }) {
                   />
                   <div className="form-group">
                     <label className="form-label">Debit Note Date</label>
-                    <input
-                      type="date"
-                      className="form-input"
-                      value={formData.date}
-                      onChange={(e) => handleInputChange('date', e.target.value)}
-                    />
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <input
+                        type="date"
+                        className="form-input"
+                        value={formData.date}
+                        onChange={(e) => handleInputChange('date', e.target.value)}
+                        onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (err) {} }}
+                        style={{ cursor: 'pointer', paddingRight: '36px' }}
+                      />
+                      <Calendar
+                        size={18}
+                        style={{ position: 'absolute', right: '12px', pointerEvents: 'none', color: '#00A8C6' }}
+                      />
+                    </div>
                   </div>
                 </div>
                 <AutocompleteInput
@@ -1925,15 +1954,16 @@ export default function Dashboard({ onLogout }) {
                             const cleanQtyStr = (item.quantity || '').toString().replace(/[^0-9.]/g, '');
                             const cleanRateStr = (item.rate || '').toString().replace(/[^0-9.]/g, '');
 
-                            const hasAmt = cleanAmtStr !== '' || (cleanQtyStr !== '' && cleanRateStr !== '');
-                            const amt = hasAmt
-                              ? (cleanAmtStr !== ''
-                                ? (parseFloat(cleanAmtStr) || 0)
-                                : (parseFloat(cleanQtyStr) || 0) * (parseFloat(cleanRateStr) || 0))
-                              : null;
-
+                            const amtVal = cleanAmtStr !== '' ? parseFloat(cleanAmtStr) : NaN;
                             const qtyVal = cleanQtyStr !== '' ? parseFloat(cleanQtyStr) : null;
                             const rateVal = cleanRateStr !== '' ? parseFloat(cleanRateStr) : null;
+
+                            let amt = null;
+                            if (!isNaN(amtVal)) {
+                              amt = amtVal;
+                            } else if (qtyVal !== null && rateVal !== null && !isNaN(qtyVal) && !isNaN(rateVal) && qtyVal > 0 && rateVal > 0) {
+                              amt = qtyVal * rateVal;
+                            }
                             const amtStr = amt !== null ? amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
 
                             return (
@@ -2199,7 +2229,6 @@ export default function Dashboard({ onLogout }) {
                         <p className="history-date">Generated: {inv.date}</p>
                       </div>
                       <div className="history-right">
-                        <span className={`badge-status ${inv.status || 'pending'}`}>{inv.status || 'pending'}</span>
                         <span className="history-amount">₹{(inv.amount || 0).toLocaleString()}</span>
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <button className="btn-outline" onClick={() => handleLoadInvoice(inv)}>

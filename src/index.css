@@ -1131,6 +1131,29 @@ button, input, select, textarea {
   text-align: left;
 }
 
+/* Desktop Independent Scrolling for Form vs Live Preview */
+@media (min-width: 1025px) {
+  .invoice-form-container {
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 1.5rem;
+    position: sticky;
+    top: 20px;
+    scrollbar-width: thin;
+  }
+  
+  .invoice-preview-container,
+  .lr-preview-container {
+    max-height: calc(100vh - 120px);
+    overflow: auto;
+    padding-right: 0.5rem;
+    position: sticky;
+    top: 20px;
+    scrollbar-width: thin;
+  }
+}
+
 .form-section-title {
   font-size: 1.1rem;
   font-weight: 700;

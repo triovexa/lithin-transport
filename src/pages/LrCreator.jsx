@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Trash2, Printer, Save, Truck, Info } from 'lucide-react';
+import { Plus, Trash2, Printer, Save, Truck, Info, Calendar } from 'lucide-react';
 import { db } from '../firebase';
 import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 
@@ -1084,12 +1084,20 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
             />
             <div className="form-group">
               <label className="form-label">Date</label>
-              <input
-                type="date"
-                className="form-input"
-                value={formData.date}
-                onChange={(e) => handleInputChange('date', e.target.value)}
-              />
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <input
+                  type="date"
+                  className="form-input"
+                  value={formData.date}
+                  onChange={(e) => handleInputChange('date', e.target.value)}
+                  onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (err) {} }}
+                  style={{ cursor: 'pointer', paddingRight: '36px' }}
+                />
+                <Calendar
+                  size={18}
+                  style={{ position: 'absolute', right: '12px', pointerEvents: 'none', color: '#00A8C6' }}
+                />
+              </div>
             </div>
           </div>
 

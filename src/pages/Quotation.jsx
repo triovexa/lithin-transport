@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Download } from 'lucide-react';
+import { Download, Calendar } from 'lucide-react';
 import { db } from '../firebase';
 import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 
@@ -587,27 +587,31 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
             />
           </div>
           {/* Date Picker */}
-          <div style={{ textAlign: 'right', fontSize: '12px', paddingRight: '20px' }}>
-            <label style={{ fontWeight: 'bold', marginRight: '6px', fontSize: '12px' }}>Date:</label>
+          <div style={{ textAlign: 'right', fontSize: '12px', paddingRight: '20px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
+            <label style={{ fontWeight: 'bold', fontSize: '12px' }}>Date:</label>
             <span className="pdf-date-text" style={{ display: 'none', fontSize: '12px', fontWeight: 'bold' }}>
               {formatDate(quotationDate)}
             </span>
-            <input
-              type="date"
-              value={quotationDate}
-              onChange={(e) => setQuotationDate(e.target.value)}
-              style={{
-                border: '1px dashed #ccc',
-                background: 'transparent',
-                outline: 'none',
-                fontFamily: '"Times New Roman", Times, serif',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                padding: '4px',
-                width: '125px'
-              }}
-              className="pdf-textarea pdf-date-input"
-            />
+            <div className="pdf-date-input" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+              <input
+                type="date"
+                value={quotationDate}
+                onChange={(e) => setQuotationDate(e.target.value)}
+                onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (err) {} }}
+                style={{
+                  border: '1px dashed #ccc',
+                  background: 'transparent',
+                  outline: 'none',
+                  fontFamily: '"Times New Roman", Times, serif',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  padding: '4px 22px 4px 4px',
+                  width: '125px'
+                }}
+              />
+              <Calendar size={13} style={{ position: 'absolute', right: '4px', pointerEvents: 'none', color: '#000000' }} />
+            </div>
           </div>
         </div>
 
@@ -913,27 +917,31 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
                 />
               </div>
               {/* Date Picker */}
-              <div style={{ textAlign: 'right', fontSize: '13px', paddingRight: '15px' }}>
-                <label style={{ fontWeight: 'bold', marginRight: '6px', fontSize: '15px' }}>Date:</label>
+              <div style={{ textAlign: 'right', fontSize: '13px', paddingRight: '15px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
+                <label style={{ fontWeight: 'bold', fontSize: '15px' }}>Date:</label>
                 <span className="pdf-date-text" style={{ display: 'none', fontSize: '13px', fontWeight: 'bold' }}>
                   {formatDate(quotationDate)}
                 </span>
-                <input
-                  type="date"
-                  value={quotationDate}
-                  onChange={(e) => setQuotationDate(e.target.value)}
-                  style={{
-                    border: '1px dashed #ccc',
-                    background: 'transparent',
-                    outline: 'none',
-                    fontFamily: '"Times New Roman", Times, serif',
-                    fontSize: '13px',
-                    fontWeight: 'bold',
-                    padding: '4px',
-                    width: '130px'
-                  }}
-                  className="pdf-textarea pdf-date-input"
-                />
+                <div className="pdf-date-input" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+                  <input
+                    type="date"
+                    value={quotationDate}
+                    onChange={(e) => setQuotationDate(e.target.value)}
+                    onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (err) {} }}
+                    style={{
+                      border: '1px dashed #ccc',
+                      background: 'transparent',
+                      outline: 'none',
+                      fontFamily: '"Times New Roman", Times, serif',
+                      fontSize: '13px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      padding: '4px 22px 4px 4px',
+                      width: '130px'
+                    }}
+                  />
+                  <Calendar size={14} style={{ position: 'absolute', right: '4px', pointerEvents: 'none', color: '#000000' }} />
+                </div>
               </div>
             </div>
 
