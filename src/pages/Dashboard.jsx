@@ -2120,15 +2120,23 @@ export default function Dashboard({ onLogout }) {
                           padding: '8px',
                           display: 'flex',
                           flexDirection: 'column',
+                          alignItems: 'center',
                           justifyContent: 'space-between',
+                          textAlign: 'center',
                           minHeight: '90px'
                         }}>
-                          <div style={{ fontWeight: '700', textAlign: 'center', textTransform: 'uppercase' }}>
+                          <div style={{ fontWeight: '700', textAlign: 'center', textTransform: 'uppercase', fontSize: '0.72rem' }}>
                             for {formData.companyName}
                           </div>
-                          <div style={{ textAlign: 'right', marginTop: 'auto' }}>
-                            <strong style={{ display: 'block', fontSize: '0.72rem', textAlign: 'right' }}>{formData.signatoryName}</strong>
-                            <span style={{ fontSize: '0.62rem', fontWeight: 'bold', display: 'block', color: '#444', textAlign: 'right', marginTop: '2px' }}>Authorised Signatory</span>
+                          <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                            {formData.signatoryName && (
+                              <strong style={{ display: 'block', fontSize: '0.78rem', textAlign: 'center', fontWeight: '800', marginBottom: '2px' }}>
+                                {formData.signatoryName}
+                              </strong>
+                            )}
+                            <span style={{ fontSize: '0.65rem', fontWeight: 'bold', display: 'block', color: '#000000', textAlign: 'center' }}>
+                              Authorised Signatory
+                            </span>
                           </div>
                         </div>
                       </div>

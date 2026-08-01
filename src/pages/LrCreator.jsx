@@ -241,6 +241,7 @@ const DEFAULT_LR = {
   to: '',
   truckNo: '',
   paymentMode: 'TOPAY', 
+  signatureName: '',
   consignorName: '',
   consignorAddress: '',
   consignorGst: '',
@@ -1422,7 +1423,7 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
             </div>
           </div>
 
-          {/* Authorized Signature Upload */}
+          {/* Authorized Signature (Image Priority or Text) */}
           <h4 className="form-section-title">Authorized Signature</h4>
           <div style={{
             marginBottom: '1.5rem',
@@ -1432,75 +1433,89 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
             border: '1px solid #262D3D',
             display: 'flex',
             flexDirection: 'column',
-            gap: '8px'
+            gap: '12px'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div className="form-group">
+              <label className="form-label" style={{ color: '#94A3B8' }}>Signatory Name (Text)</label>
               <input
-                type="file"
-                accept="image/*"
-                onChange={handleSignatureUpload}
-                style={{ display: 'none' }}
-                id="sig-upload-input"
+                type="text"
+                className="form-input"
+                placeholder="e.g. Arul"
+                value={formData.signatureName || ''}
+                onChange={(e) => handleInputChange('signatureName', e.target.value)}
               />
-              <label
-                htmlFor="sig-upload-input"
-                className="btn-outline"
-                style={{
-                  padding: '6px 12px',
-                  fontSize: '0.8rem',
-                  cursor: 'pointer',
-                  borderColor: 'rgba(0, 180, 216, 0.4)',
-                  color: 'var(--primary)',
-                  margin: 0,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  borderRadius: '4px',
-                  borderWidth: '1.5px',
-                  borderStyle: 'solid'
-                }}
-              >
-                Upload Signature Image
-              </label>
-              {signatureImage && (
-                <button
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label className="form-label" style={{ color: '#94A3B8' }}>Upload Signature Image (1st Priority)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleSignatureUpload}
+                  style={{ display: 'none' }}
+                  id="sig-upload-input"
+                />
+                <label
+                  htmlFor="sig-upload-input"
                   className="btn-outline"
                   style={{
                     padding: '6px 12px',
                     fontSize: '0.8rem',
-                    color: '#EF4444',
-                    borderColor: '#EF4444',
+                    cursor: 'pointer',
+                    borderColor: 'rgba(0, 180, 216, 0.4)',
+                    color: 'var(--primary)',
                     margin: 0,
-                    borderRadius: '4px'
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    borderRadius: '4px',
+                    borderWidth: '1.5px',
+                    borderStyle: 'solid'
                   }}
-                  onClick={handleRemoveSignature}
                 >
-                  Remove
-                </button>
+                  Upload Signature Image
+                </label>
+                {signatureImage && (
+                  <button
+                    className="btn-outline"
+                    style={{
+                      padding: '6px 12px',
+                      fontSize: '0.8rem',
+                      color: '#EF4444',
+                      borderColor: '#EF4444',
+                      margin: 0,
+                      borderRadius: '4px'
+                    }}
+                    onClick={handleRemoveSignature}
+                  >
+                    Remove Image
+                  </button>
+                )}
+              </div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                Supports JPG, PNG, WEBP, etc. Uploading an image takes 1st priority over text signature.
+              </span>
+              {signatureImage && (
+                <div style={{
+                  marginTop: '8px',
+                  backgroundColor: '#FFFFFF',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  maxHeight: '40px',
+                  alignSelf: 'flex-start'
+                }}>
+                  <img
+                    src={signatureImage}
+                    alt="Signature Preview"
+                    style={{ maxHeight: '32px', objectFit: 'contain' }}
+                  />
+                </div>
               )}
             </div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              Supports JPG, PNG, WEBP, etc. Max size 5MB.
-            </span>
-            {signatureImage && (
-              <div style={{
-                marginTop: '8px',
-                backgroundColor: '#FFFFFF',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                maxHeight: '40px',
-                alignSelf: 'flex-start'
-              }}>
-                <img
-                  src={signatureImage}
-                  alt="Signature Preview"
-                  style={{ maxHeight: '32px', objectFit: 'contain' }}
-                />
-              </div>
-            )}
           </div>
 
           {/* Copy indicators checklist */}
@@ -1995,7 +2010,9 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                                               <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                                                 <img src="/Title.png" alt="LITHIN TRANSPORT" style={{ height: '18px', width: 'auto', objectFit: 'contain' }} />
                                               </div>
-                                              {signatureImage && (
+
+                                              {/* Signature Rendering: Image has FIRST priority, Text falls back */}
+                                              {signatureImage ? (
                                                 <img
                                                   src={signatureImage}
                                                   alt="Signature"
@@ -2008,7 +2025,23 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                                                     pointerEvents: 'none'
                                                   }}
                                                 />
+                                              ) : (
+                                                formData.signatureName && (
+                                                  <div style={{
+                                                    position: 'absolute',
+                                                    top: '32px',
+                                                    width: '100%',
+                                                    textAlign: 'center',
+                                                    fontWeight: '900',
+                                                    fontSize: '0.8rem',
+                                                    color: '#08103A',
+                                                    pointerEvents: 'none'
+                                                  }}>
+                                                    {formData.signatureName}
+                                                  </div>
+                                                )
                                               )}
+
                                               <div style={{ textAlign: 'center', width: '100%', marginTop: 'auto', paddingTop: '15px' }}>
                                                 <div style={{ borderBottom: '1px dotted #08103A', width: '80%', margin: '0 auto 4px' }}></div>
                                                 <strong>Authorised Signature</strong>
