@@ -2268,7 +2268,7 @@ export default function Dashboard({ onLogout }) {
                       <div className="history-left">
                         <p className="history-code">{lr.id}</p>
                         <p className="history-name">From: {lr.consignor || 'Unknown'} | To: {lr.consignee || 'Unknown'}</p>
-                        <p className="history-date">Truck: {lr.truckNo || 'N/A'} | Date: {lr.date}</p>
+                        <p className="history-date">Truck: {lr.truckNo || 'N/A'}{lr.vehicleType ? ` (${lr.vehicleType})` : ''} | Date: {lr.date}</p>
                       </div>
                       <div className="history-right">
                         <span className="history-amount">₹{(lr.amount || 0).toLocaleString()}</span>

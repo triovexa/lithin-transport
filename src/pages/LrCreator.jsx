@@ -240,6 +240,7 @@ const DEFAULT_LR = {
   from: '',
   to: '',
   truckNo: '',
+  vehicleType: '',
   paymentMode: 'TOPAY', 
   signatureName: '',
   consignorName: '',
@@ -1183,17 +1184,26 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
             onSelectSuggestion={(val) => handleInputChange('consigneeGst', val)}
           />
 
-          {/* Transit Details */}
+          {/* Transit & Payment Details */}
           <h4 className="form-section-title">Transit & Payment Details</h4>
-          <div className="form-grid-2">
+          <div className="form-grid-3">
             <AutocompleteInput
-              label="Truck Number"
-              placeholder="e.g. TN 72 AT 9459"
-              maxLength={15}
+              label="Truck / Lorry No."
+              placeholder="e.g. TN 37 CY 8884"
+              maxLength={20}
               value={formData.truckNo}
               onChange={(e) => handleInputChange('truckNo', e.target.value)}
               suggestions={getFieldSuggestions('truckNo')}
               onSelectSuggestion={(val) => handleInputChange('truckNo', val)}
+            />
+            <AutocompleteInput
+              label="Vehicle Type"
+              placeholder="e.g. Container 14ft / Open Lorry"
+              maxLength={30}
+              value={formData.vehicleType}
+              onChange={(e) => handleInputChange('vehicleType', e.target.value)}
+              suggestions={getFieldSuggestions('vehicleType')}
+              onSelectSuggestion={(val) => handleInputChange('vehicleType', val)}
             />
             <div className="form-group">
               <label className="form-label">Payment Mode</label>
@@ -1407,20 +1417,18 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
             />
           </div>
 
-          <div className="form-grid-2">
-            <div className="form-group">
-              <label className="form-label">GST Rate (%)</label>
-              <select
-                className="form-input"
-                value={formData.charges.gstRate}
-                onChange={(e) => handleChargeChange('gstRate', e.target.value)}
-              >
-                <option value="0">0% (Exempted)</option>
-                <option value="5">5% (Standard Transport)</option>
-                <option value="12">12%</option>
-                <option value="18">18%</option>
-              </select>
-            </div>
+          <div className="form-group">
+            <label className="form-label">GST Rate (%)</label>
+            <select
+              className="form-input"
+              value={formData.charges.gstRate}
+              onChange={(e) => handleChargeChange('gstRate', e.target.value)}
+            >
+              <option value="0">0% (Exempted)</option>
+              <option value="5">5% (Standard Transport)</option>
+              <option value="12">12%</option>
+              <option value="18">18%</option>
+            </select>
           </div>
 
           {/* Authorized Signature (Image Priority or Text) */}
@@ -2096,33 +2104,53 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                                 <td style={{ width: '32%', verticalAlign: 'top', padding: 0, height: '100%' }}>
                                   <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
-                                    {/* Truck & Payment Info */}
-                                    <div style={{ padding: '6px', borderBottom: '3px solid #08103A', fontSize: '0.7rem', lineHeight: '1.5' }}>
-                                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <strong>TRUCK NUMBER:</strong>
-                                        <span style={{
-                                          fontWeight: 'bold',
-                                          fontSize: '0.85rem',
-                                          color: '#08103A',
-                                          backgroundImage: `url("${DOTTED_LINE_SVG}")`,
-                                          backgroundSize: '4px 1.25rem',
-                                          backgroundRepeat: 'repeat-x',
-                                          backgroundPosition: 'bottom left',
-                                          minHeight: '1.3rem',
-                                          paddingBottom: '1px',
-                                          display: 'block',
-                                          marginTop: '2px'
-                                        }}>
-                                          {formData.truckNo || '\u00A0'}
-                                        </span>
-                                      </div>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
-                                        <strong>PAYMENT:</strong>
-                                        <span className={formData.paymentMode === 'TOPAY' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{ fontSize: '0.65rem' }}>TOPAY</span>
-                                        <span className={formData.paymentMode === 'PAID' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{ fontSize: '0.65rem' }}>PAID</span>
-                                        <span className={formData.paymentMode === 'CREDIT' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{ fontSize: '0.65rem' }}>CREDIT</span>
-                                      </div>
-                                    </div>
+                                     {/* Truck & Vehicle Type & Payment Info */}
+                                     <div style={{ padding: '6px', borderBottom: '3px solid #08103A', fontSize: '0.7rem', lineHeight: '1.4' }}>
+                                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '4px' }}>
+                                         <div>
+                                           <strong style={{ fontSize: '0.65rem' }}>TRUCK NUMBER:</strong>
+                                           <span style={{
+                                             fontWeight: 'bold',
+                                             fontSize: '0.8rem',
+                                             color: '#08103A',
+                                             backgroundImage: `url("${DOTTED_LINE_SVG}")`,
+                                             backgroundSize: '4px 1.25rem',
+                                             backgroundRepeat: 'repeat-x',
+                                             backgroundPosition: 'bottom left',
+                                             minHeight: '1.2rem',
+                                             paddingBottom: '1px',
+                                             display: 'block',
+                                             marginTop: '1px'
+                                           }}>
+                                             {formData.truckNo || '\u00A0'}
+                                           </span>
+                                         </div>
+                                         <div>
+                                           <strong style={{ fontSize: '0.65rem' }}>VEHICLE TYPE:</strong>
+                                           <span style={{
+                                             fontWeight: 'bold',
+                                             fontSize: '0.8rem',
+                                             color: '#08103A',
+                                             backgroundImage: `url("${DOTTED_LINE_SVG}")`,
+                                             backgroundSize: '4px 1.25rem',
+                                             backgroundRepeat: 'repeat-x',
+                                             backgroundPosition: 'bottom left',
+                                             minHeight: '1.2rem',
+                                             paddingBottom: '1px',
+                                             display: 'block',
+                                             marginTop: '1px'
+                                           }}>
+                                             {formData.vehicleType || '\u00A0'}
+                                           </span>
+                                         </div>
+                                       </div>
+                                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                                         <strong style={{ fontSize: '0.65rem' }}>PAYMENT:</strong>
+                                         <span className={formData.paymentMode === 'TOPAY' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{ fontSize: '0.62rem' }}>TOPAY</span>
+                                         <span className={formData.paymentMode === 'PAID' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{ fontSize: '0.62rem' }}>PAID</span>
+                                         <span className={formData.paymentMode === 'CREDIT' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{ fontSize: '0.62rem' }}>CREDIT</span>
+                                       </div>
+                                     </div>
 
                                     {/* Charges breakdown table Wrapper */}
                                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
