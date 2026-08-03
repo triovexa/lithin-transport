@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Truck, Lock, Phone, Mail, BadgeCheck, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import truckOne from '../assets/slider_truck_one.png';
+import truckTwo from '../assets/slider_truck_two.png';
+import truckThree from '../assets/slider_truck_three.png';
 
 export default function LandingPage({ onNavigate }) {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   // Exactly 3 AI-generated premium horizontal logistics truck slides
   const slides = [
-    { src: '/slider_truck_one.png', alt: 'LT Transport Fleet 1' },
-    { src: '/slider_truck_two.png', alt: 'LT Cargo Logistics 2' },
-    { src: '/slider_truck_three.png', alt: 'LT Freight Supply 3' }
+    { src: truckOne, alt: 'LT Transport Fleet 1' },
+    { src: truckTwo, alt: 'LT Cargo Logistics 2' },
+    { src: truckThree, alt: 'LT Freight Supply 3' }
   ];
 
   const branches = [

@@ -12,11 +12,12 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore with persistent cache to support offline mode
+// Initialize Firestore with persistent cache to support offline mode and force long polling for reliable localhost connections
 const db = initializeFirestore(app, {
   localCache: persistentLocalCache({
     tabManager: persistentMultipleTabManager()
-  })
+  }),
+  experimentalForceLongPolling: true
 });
 
 export { db };
