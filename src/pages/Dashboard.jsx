@@ -71,7 +71,7 @@ const numberToWords = (num) => {
 // Autocomplete suggestions dropdown element
 const SuggestionsDropdown = ({ query, list, onSelect, onClose }) => {
   const queryClean = (query || '').toString().toLowerCase().trim();
-  
+
   const filtered = list.filter(val => {
     if (!val) return false;
     const valLower = val.toString().toLowerCase();
@@ -476,7 +476,7 @@ export default function Dashboard({ onLogout }) {
 
         const existingList = current[key] || [];
         const mergedList = [...existingList];
-        
+
         cleanUpdates.forEach(item => {
           if (!mergedList.includes(item)) {
             mergedList.push(item);
@@ -1162,7 +1162,7 @@ export default function Dashboard({ onLogout }) {
 
             {/* Advanced Interactive Analytics Section */}
             <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem', marginBottom: '2.5rem' }}>
-              
+
               {/* Chart 1: Advanced Revenue Scale & Monthly Freight Volume Graph */}
               <div className="overview-card" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '1.75rem', position: 'relative' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -1191,8 +1191,8 @@ export default function Dashboard({ onLogout }) {
                       </defs>
                       <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(0,180,216,0.15)" />
                       <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)', fontWeight: 700 }} dy={10} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'var(--text-muted)', fontWeight: 700 }} tickFormatter={(val) => `₹${val >= 1000 ? (val/1000).toFixed(0)+'k' : val}`} />
-                      <RechartsTooltip 
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'var(--text-muted)', fontWeight: 700 }} tickFormatter={(val) => `₹${val >= 1000 ? (val / 1000).toFixed(0) + 'k' : val}`} />
+                      <RechartsTooltip
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 8px 25px rgba(0, 180, 216, 0.15)' }}
                         formatter={(value) => [`₹${value.toLocaleString()}`, 'Revenue']}
                         labelStyle={{ fontWeight: 700, color: 'var(--text-dark)', marginBottom: '5px' }}
@@ -1205,7 +1205,7 @@ export default function Dashboard({ onLogout }) {
 
               {/* Advanced Analytics Column */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                
+
                 {/* Chart 2: Database Distribution Radial Donut */}
                 <div className="overview-card" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '1.5rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
@@ -1230,7 +1230,7 @@ export default function Dashboard({ onLogout }) {
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
                           </Pie>
-                          <RechartsTooltip 
+                          <RechartsTooltip
                             formatter={(value, name, props) => [`${value}%`, props.payload.label]}
                             contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
                           />
@@ -1289,7 +1289,6 @@ export default function Dashboard({ onLogout }) {
                         </Bar>
                       </BarChart>
                     </ResponsiveContainer>
-                  </div>
                   </div>
                 </div>
 
@@ -1410,7 +1409,7 @@ export default function Dashboard({ onLogout }) {
 
                 {/* Document Details */}
                 <h4 className="form-section-title">Invoice / Document Details</h4>
-                 <div className="form-grid-2">
+                <div className="form-grid-2">
                   <AutocompleteInput
                     label="Invoice No"
                     value={formData.originalInvoiceNo}
@@ -1426,7 +1425,7 @@ export default function Dashboard({ onLogout }) {
                         className="form-input"
                         value={formData.originalInvoiceDate}
                         onChange={(e) => handleInputChange('originalInvoiceDate', e.target.value)}
-                        onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (err) {} }}
+                        onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (err) { } }}
                         style={{ cursor: 'pointer', paddingRight: '36px' }}
                       />
                       <Calendar
@@ -1452,7 +1451,7 @@ export default function Dashboard({ onLogout }) {
                         className="form-input"
                         value={formData.date}
                         onChange={(e) => handleInputChange('date', e.target.value)}
-                        onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (err) {} }}
+                        onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (err) { } }}
                         style={{ cursor: 'pointer', paddingRight: '36px' }}
                       />
                       <Calendar

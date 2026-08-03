@@ -25,56 +25,9 @@ export default function LandingPage({ onNavigate }) {
       email: 'lithintransports',
       badge1: 'CENTRAL OPERATIONS COMMAND',
       badge2: '150 ALLOCATED LORRIES',
-      mapQuery: 'Natrampalli,Tirupattur'
+      mapQuery: '4/252 Vedivattam Agraharam Natrampalli Tirupattur 635651'
     },
-    {
-      id: 'vavipalayam',
-      label: 'TIRUPUR',
-      name: 'TIRUPUR OFFICE',
-      zone: 'RING ROAD LOGISTICS ZONE',
-      address: 'NO 384/4, NETTIPATTAN KUTTAI, VAVIPALAYAM RING ROAD, TIRUPUR - 641 666',
-      dial: '+91 95667 38884',
-      email: 'lithintransports',
-      badge1: 'TRANSIT & CARGO ROUTING',
-      badge2: '85 ALLOCATED LORRIES',
-      mapQuery: 'Vavipalayam,Tirupur'
-    },
-    {
-      id: 'chennai',
-      label: 'CHENNAI',
-      name: 'CHENNAI OFFICE',
-      zone: 'PORT LOGISTICS HUB',
-      address: 'NO 45, G.N.T. ROAD, MADHAVARAM, CHENNAI - 600 110',
-      dial: '+91 95667 38884',
-      email: 'lithintransports',
-      badge1: 'METRO CONSIGNMENT CENTER',
-      badge2: '95 ALLOCATED LORRIES',
-      mapQuery: 'Madhavaram,Chennai'
-    },
-    {
-      id: 'coimbatore',
-      label: 'COIMBATORE',
-      name: 'COIMBATORE OFFICE',
-      zone: 'WESTERN ZONE LOGISTICS GATEWAY',
-      address: 'NO 112, LORRY STAND ROAD, UKKADAM, COIMBATORE - 641 001',
-      dial: '+91 95667 38884',
-      email: 'lithintransports',
-      badge1: 'REGIONAL DEPOT COMMAND',
-      badge2: '70 ALLOCATED LORRIES',
-      mapQuery: 'Ukkadam,Coimbatore'
-    },
-    {
-      id: 'bangalore',
-      label: 'BANGALORE',
-      name: 'BANGALORE OFFICE',
-      zone: 'SOUTHERN TECH-INDUSTRIAL ZONE',
-      address: 'NO 14 3RD CROSS, ERAPPA REDDY CHIKKA BANASWADI, BANGALORE - 560 043',
-      dial: '+91 95667 38884',
-      email: 'lithintransports',
-      badge1: 'PREMIUM INTERSTATE HUB GATEWAY',
-      badge2: '110 ALLOCATED LORRIES',
-      mapQuery: 'Banaswadi,Bangalore'
-    }
+    
   ];
 
   const [selectedBranch, setSelectedBranch] = useState(branches[0]);
@@ -365,7 +318,7 @@ export default function LandingPage({ onNavigate }) {
             ?
           </div>
           <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-muted)', margin: 0, lineHeight: '1.5' }}>
-            Have cargo dispatching out of an unlisted small town or bypass corridor in Tamil Nadu? Call our central Coimbatore billing office to request customized on-road pick logs.
+            Have cargo dispatching out of an unlisted small town or bypass corridor in Tamil Nadu? Call our central Natrampalli HQ or Tirupur office (+91 95667 38884) to request customized on-road pick logs.
           </p>
         </div>
       </section>
