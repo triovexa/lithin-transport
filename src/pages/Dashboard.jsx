@@ -4,6 +4,7 @@ import LrCreator from './LrCreator';
 import Quotation from './Quotation';
 import { db } from '../firebase';
 import { collection, doc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, Legend } from 'recharts';
 
 const LTLogo = () => (
   <div style={{
@@ -334,23 +335,8 @@ export default function Dashboard({ onLogout }) {
   }, [activeTab]);
 
   const [invoices, setInvoices] = useState(() => {
-    const saved = localStorage.getItem('lt_saved_invoices') || localStorage.getItem('svat_saved_invoices');
-    return saved ? JSON.parse(saved) : [
-      {
-        id: 'LT/DN/26-27/13',
-        consignee: 'NEW SABARI SASTHA SHIPPING SERVICES',
-        date: '30-April-26',
-        amount: 62000,
-        status: 'paid'
-      },
-      {
-        id: 'LT/DN/26-27/12',
-        consignee: 'NEW SABARI SASTHA SHIPPING SERVICES',
-        date: '15-April-26',
-        amount: 45000,
-        status: 'paid'
-      }
-    ];
+    const saved = localStorage.getItem('svat_saved_invoices');
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [savedLrs, setSavedLrs] = useState(() => {
@@ -825,9 +811,15 @@ export default function Dashboard({ onLogout }) {
   // Calculate dynamic charts data based on state variables: invoices, savedLrs, savedQuotations
   // Chart 1: Revenue Trends (aggregated by Jan-Dec calendar months)
   const chartDataPoints = (() => {
-    const getInvoiceMonthIndex = (dateStr) => {
+    const getInvoiceMonthIndex = (inv) => {
+      if (!inv) return -1;
+      if (inv.createdAt && typeof inv.createdAt === 'number') {
+        const d = new Date(inv.createdAt);
+        if (!isNaN(d.getTime())) return d.getMonth();
+      }
+      const dateStr = inv.date;
       if (!dateStr) return -1;
-      const str = dateStr.toLowerCase();
+      const str = dateStr.toString().toLowerCase().trim();
       const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
       for (let i = 0; i < 12; i++) {
         if (str.includes(months[i])) return i;
@@ -837,9 +829,10 @@ export default function Dashboard({ onLogout }) {
         if (parts[0].length === 4) {
           const m = parseInt(parts[1], 10);
           if (m >= 1 && m <= 12) return m - 1;
+        } else if (parts[2].length === 4 || parts[2].length === 2) {
+          const m = parseInt(parts[1], 10);
+          if (m >= 1 && m <= 12) return m - 1;
         }
-        const m = parseInt(parts[1], 10);
-        if (m >= 1 && m <= 12) return m - 1;
       }
       try {
         const d = new Date(dateStr);
@@ -851,35 +844,20 @@ export default function Dashboard({ onLogout }) {
     const monthlyRevenue = Array(12).fill(0);
     // Accumulate invoice amounts by month
     invoices.forEach((inv) => {
-      const monthIdx = getInvoiceMonthIndex(inv.date);
+      const monthIdx = getInvoiceMonthIndex(inv);
       if (monthIdx >= 0 && monthIdx < 12) {
-        monthlyRevenue[monthIdx] += Number(inv.amount) || 0;
+        const amt = parseFloat((inv.amount || 0).toString().replace(/[^0-9.]/g, '')) || 0;
+        monthlyRevenue[monthIdx] += amt;
       }
     });
 
     const monthlyLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const hasRealData = monthlyRevenue.some(amt => amt > 0);
 
-    // Map to coordinates (X from 40 to 480, Y from 180 to 30)
-    const points = monthlyLabels.map((label, idx) => {
-      const amt = hasRealData ? monthlyRevenue[idx] : (15000 + (idx % 3) * 12000 + (idx % 5) * 8000);
-      return { label, amount: amt };
-    });
-
-    const maxVal = Math.max(...points.map(p => p.amount), 10000);
-
-    return points.map((item, idx) => {
-      const x = 40 + idx * 40;
-      const y = 180 - (item.amount / maxVal) * 140;
-      return { x, y, label: item.label, amount: item.amount, isReal: hasRealData && monthlyRevenue[idx] > 0 };
-    });
+    return monthlyLabels.map((label, idx) => ({
+      label,
+      amount: monthlyRevenue[idx]
+    }));
   })();
-
-  // Generate SVG path strings
-  const linePathD = chartDataPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x},${p.y}`).join(' ');
-  const areaPathD = chartDataPoints.length > 0
-    ? `${linePathD} L ${chartDataPoints[chartDataPoints.length - 1].x},180 L ${chartDataPoints[0].x},180 Z`
-    : '';
 
   // Chart 2: Cargo Distribution based on actual counts
   const donutSegments = (() => {
@@ -890,39 +868,59 @@ export default function Dashboard({ onLogout }) {
 
     const totalItems = invCount + lrCount + expCount + domCount;
 
-    const parts = totalItems > 0 ? [
-      { label: 'Invoices', count: invCount, color: 'var(--primary)', pct: Math.round((invCount / totalItems) * 100) },
-      { label: 'Lorry Receipts', count: lrCount, color: 'var(--text-dark)', pct: Math.round((lrCount / totalItems) * 100) },
-      { label: 'Export Quotes', count: expCount, color: '#64748B', pct: Math.round((expCount / totalItems) * 100) },
-      { label: 'Domestic Quotes', count: domCount, color: '#cbd5e1', pct: Math.round((domCount / totalItems) * 100) }
-    ] : [
-      { label: 'Invoices', count: 4, color: 'var(--primary)', pct: 40 },
-      { label: 'Lorry Receipts', count: 3, color: 'var(--text-dark)', pct: 30 },
-      { label: 'Export Quotes', count: 2, color: '#64748B', pct: 20 },
-      { label: 'Domestic Quotes', count: 1, color: '#cbd5e1', pct: 10 }
+    const parts = [
+      { label: 'Invoices', count: invCount, color: 'var(--primary)', pct: totalItems > 0 ? Math.round((invCount / totalItems) * 100) : 0 },
+      { label: 'Lorry Receipts', count: lrCount, color: 'var(--text-dark)', pct: totalItems > 0 ? Math.round((lrCount / totalItems) * 100) : 0 },
+      { label: 'Export Quotes', count: expCount, color: '#64748B', pct: totalItems > 0 ? Math.round((expCount / totalItems) * 100) : 0 },
+      { label: 'Domestic Quotes', count: domCount, color: '#cbd5e1', pct: totalItems > 0 ? Math.round((domCount / totalItems) * 100) : 0 }
     ];
 
-    // Recalculate segment percentages to make sure they sum up to 100
-    const totalPct = parts.reduce((a, b) => a + b.pct, 0);
-    if (totalPct !== 100 && totalPct > 0) {
-      const nonZeroIdx = parts.findIndex(p => p.pct > 0);
-      if (nonZeroIdx !== -1) {
-        parts[nonZeroIdx].pct += (100 - totalPct);
+    // Recalculate segment percentages to make sure they sum up to 100 if totalItems > 0
+    if (totalItems > 0) {
+      const totalPct = parts.reduce((a, b) => a + b.pct, 0);
+      if (totalPct !== 100 && totalPct > 0) {
+        const nonZeroIdx = parts.findIndex(p => p.pct > 0);
+        if (nonZeroIdx !== -1) {
+          parts[nonZeroIdx].pct += (100 - totalPct);
+        }
       }
     }
 
-    const circumference = 314.16;
-    let currentOffset = 0;
-    return parts.map((d) => {
-      const len = (d.pct / 100) * circumference;
-      const offset = currentOffset;
-      currentOffset -= len;
+    return parts;
+  })();
+
+  // Operational Performance based on actual Firebase document status
+  const operationalPerformance = (() => {
+    const totalDocs = invoices.length + savedLrs.length;
+    if (totalDocs === 0) {
       return {
-        ...d,
-        dasharray: `${len} ${circumference}`,
-        offset: offset
+        data: [
+          { name: 'Paid & Settled', value: 0, fill: '#10B981' },
+          { name: 'Pending Auth', value: 0, fill: '#F59E0B' },
+          { name: 'Active Transit', value: 0, fill: '#00B4D8' }
+        ],
+        health: '100%'
       };
-    });
+    }
+
+    const paidCount = invoices.filter(inv => inv.status === 'paid' || inv.status === 'Paid' || inv.status === 'settled' || inv.status === 'Settled').length;
+    const pendingCount = invoices.filter(inv => inv.status === 'pending' || inv.status === 'Pending' || inv.status === 'unpaid' || !inv.status).length;
+    const transitCount = savedLrs.length;
+
+    const paidPct = Math.round((paidCount / totalDocs) * 100);
+    const pendingPct = Math.round((pendingCount / totalDocs) * 100);
+    const transitPct = Math.round((transitCount / totalDocs) * 100);
+
+    const healthPct = Math.round(((paidCount + transitCount) / totalDocs) * 100);
+
+    return {
+      data: [
+        { name: 'Paid & Settled', value: paidPct, fill: '#10B981' },
+        { name: 'Pending Auth', value: pendingPct, fill: '#F59E0B' },
+        { name: 'Active Transit', value: transitPct, fill: '#00B4D8' }
+      ],
+      health: `${healthPct}%`
+    };
   })();
 
   // Determine Title based on GST percentage
@@ -1182,76 +1180,26 @@ export default function Dashboard({ onLogout }) {
                   </div>
                 </div>
 
-                <div style={{ position: 'relative', width: '100%', height: '250px' }}>
-                  <svg viewBox="0 0 520 230" width="100%" height="100%">
-                    <defs>
-                      <linearGradient id="advAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#00B4D8" stopOpacity="0.45" />
-                        <stop offset="100%" stopColor="#00B4D8" stopOpacity="0.0" />
-                      </linearGradient>
-                      <linearGradient id="advBarGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#06B6D4" stopOpacity="0.5" />
-                        <stop offset="100%" stopColor="#06B6D4" stopOpacity="0.05" />
-                      </linearGradient>
-                      <filter id="glowCircle" x="-20%" y="-20%" width="140%" height="140%">
-                        <feGaussianBlur stdDeviation="3" result="blur" />
-                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                      </filter>
-                    </defs>
-
-                    {/* Dotted Horizontal Gridlines & Y-Axis Scale */}
-                    <g fill="var(--text-muted)" fontSize="9" fontWeight="700" textAnchor="end">
-                      <text x="36" y="34">₹1.5L</text>
-                      <line x1="42" y1="30" x2="500" y2="30" stroke="rgba(0,180,216,0.12)" strokeDasharray="4,4" />
-
-                      <text x="36" y="84">₹1.0L</text>
-                      <line x1="42" y1="80" x2="500" y2="80" stroke="rgba(0,180,216,0.12)" strokeDasharray="4,4" />
-
-                      <text x="36" y="134">₹50K</text>
-                      <line x1="42" y1="130" x2="500" y2="130" stroke="rgba(0,180,216,0.12)" strokeDasharray="4,4" />
-
-                      <text x="36" y="184">₹0</text>
-                      <line x1="42" y1="180" x2="500" y2="180" stroke="rgba(0,180,216,0.3)" strokeWidth="1.5" />
-                    </g>
-
-                    {/* Gradient Volume Columns */}
-                    {chartDataPoints.map((pt, idx) => {
-                      const barH = Math.max(12, 180 - pt.y);
-                      return (
-                        <rect
-                          key={`adv-bar-${idx}`}
-                          x={pt.x - 11}
-                          y={pt.y}
-                          width="22"
-                          height={barH}
-                          rx="5"
-                          fill="url(#advBarGrad)"
-                        />
-                      );
-                    })}
-
-                    {/* Gradient Area Fill */}
-                    {areaPathD && <path d={areaPathD} fill="url(#advAreaGrad)" />}
-
-                    {/* Primary Smooth Curve Line */}
-                    {linePathD && <path d={linePathD} fill="none" stroke="#00A8C6" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />}
-
-                    {/* Interactive Glowing Rings */}
-                    {chartDataPoints.map((pt, idx) => (
-                      <g key={`adv-pt-${idx}`}>
-                        <circle cx={pt.x} cy={pt.y} r="7" fill="#FFFFFF" stroke="#00A8C6" strokeWidth="3" filter="url(#glowCircle)" />
-                        <circle cx={pt.x} cy={pt.y} r="3" fill="#00A8C6" />
-                        <title>{`${pt.label}: ₹${pt.amount.toLocaleString()} Revenue`}</title>
-                      </g>
-                    ))}
-
-                    {/* X-Axis Month Labels */}
-                    {chartDataPoints.map((pt, idx) => (
-                      <text key={`adv-lbl-${idx}`} x={pt.x} y="204" fill="var(--text-muted)" fontSize="9.5" textAnchor="middle" fontWeight="700">
-                        {pt.label}
-                      </text>
-                    ))}
-                  </svg>
+                <div style={{ width: '100%', height: '280px', marginTop: '1rem' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartDataPoints} margin={{ top: 15, right: 15, left: -15, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#00B4D8" stopOpacity={0.5} />
+                          <stop offset="95%" stopColor="#00B4D8" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(0,180,216,0.15)" />
+                      <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-muted)', fontWeight: 700 }} dy={10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'var(--text-muted)', fontWeight: 700 }} tickFormatter={(val) => `₹${val >= 1000 ? (val/1000).toFixed(0)+'k' : val}`} />
+                      <RechartsTooltip 
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 8px 25px rgba(0, 180, 216, 0.15)' }}
+                        formatter={(value) => [`₹${value.toLocaleString()}`, 'Revenue']}
+                        labelStyle={{ fontWeight: 700, color: 'var(--text-dark)', marginBottom: '5px' }}
+                      />
+                      <Area type="monotone" dataKey="amount" stroke="#00B4D8" strokeWidth={4} fillOpacity={1} fill="url(#colorRevenue)" activeDot={{ r: 7, strokeWidth: 3, stroke: '#FFFFFF', fill: '#00A8C6' }} />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
 
@@ -1260,35 +1208,37 @@ export default function Dashboard({ onLogout }) {
                 
                 {/* Chart 2: Database Distribution Radial Donut */}
                 <div className="overview-card" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '1.5rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                     <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-dark)' }}>Database Records Split</h3>
                     <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#00A8C6', background: 'rgba(0, 180, 216, 0.1)', padding: '2px 8px', borderRadius: '12px' }}>Live Split</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: '1.25rem' }}>
-                    <div style={{ position: 'relative', width: '125px', height: '125px', flexShrink: 0 }}>
-                      <svg width="100%" height="100%" viewBox="0 0 120 120">
-                        <circle cx="60" cy="60" r="48" fill="transparent" stroke="rgba(0, 180, 216, 0.08)" strokeWidth="14" />
-                        {donutSegments.map((segment, idx) => (
-                          segment.pct > 0 && (
-                            <circle
-                              key={`adv-donut-${idx}`}
-                              cx="60"
-                              cy="60"
-                              r="48"
-                              fill="transparent"
-                              stroke={segment.color}
-                              strokeWidth="14"
-                              strokeDasharray={segment.dasharray}
-                              strokeDashoffset={segment.offset}
-                              strokeLinecap="round"
-                              transform="rotate(-90 60 60)"
-                            />
-                          )
-                        ))}
-                      </svg>
-                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                        <span style={{ color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', fontSize: '0.55rem', fontWeight: 700 }}>Total Docs</span>
-                        <span style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-dark)', lineHeight: '1' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: '1.25rem', marginTop: '1rem' }}>
+                    <div style={{ height: '160px', width: '160px', position: 'relative', flexShrink: 0 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={donutSegments.filter(s => s.pct > 0)}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={55}
+                            outerRadius={75}
+                            paddingAngle={6}
+                            dataKey="pct"
+                            stroke="none"
+                          >
+                            {donutSegments.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <RechartsTooltip 
+                            formatter={(value, name, props) => [`${value}%`, props.payload.label]}
+                            contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
+                        <span style={{ color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', fontSize: '0.6rem', fontWeight: 700 }}>Total Docs</span>
+                        <span style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--text-dark)', lineHeight: '1' }}>
                           {invoices.length + savedLrs.length + savedQuotations.length}
                         </span>
                       </div>
@@ -1316,44 +1266,30 @@ export default function Dashboard({ onLogout }) {
 
                 {/* Chart 3: Modern Operational Performance Progress Matrix */}
                 <div className="overview-card" style={{ flexDirection: 'column', alignItems: 'stretch', padding: '1.5rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-dark)' }}>Operational Performance Matrix</h3>
-                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#10B981', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '12px' }}>Health 99%</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-dark)' }}>Operational Performance</h3>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#10B981', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '12px' }}>Health {operationalPerformance.health}</span>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {/* Item 1: Paid Invoices */}
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
-                        <span style={{ fontWeight: 600, color: 'var(--text-dark)' }}>Paid Invoices & Billing Settlement</span>
-                        <span style={{ fontWeight: 800, color: '#10B981' }}>75% Settled</span>
-                      </div>
-                      <div style={{ width: '100%', height: '7px', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{ width: '75%', height: '100%', backgroundColor: '#10B981', borderRadius: '4px' }}></div>
-                      </div>
-                    </div>
-
-                    {/* Item 2: Verified Bills */}
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
-                        <span style={{ fontWeight: 600, color: 'var(--text-dark)' }}>Verified Payment Verification</span>
-                        <span style={{ fontWeight: 800, color: '#10B981' }}>100% Verified</span>
-                      </div>
-                      <div style={{ width: '100%', height: '7px', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{ width: '100%', height: '100%', backgroundColor: '#10B981', borderRadius: '4px' }}></div>
-                      </div>
-                    </div>
-
-                    {/* Item 3: Active Fleet Transit */}
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
-                        <span style={{ fontWeight: 600, color: 'var(--text-dark)' }}>Active Fleet Freight Transit</span>
-                        <span style={{ fontWeight: 800, color: '#00B4D8' }}>10% Active</span>
-                      </div>
-                      <div style={{ width: '100%', height: '7px', backgroundColor: 'rgba(0, 180, 216, 0.12)', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{ width: '10%', height: '100%', backgroundColor: '#00B4D8', borderRadius: '4px' }}></div>
-                      </div>
-                    </div>
+                  <div style={{ width: '100%', height: '180px' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={operationalPerformance.data}
+                        layout="vertical"
+                        margin={{ top: 10, right: 30, left: -20, bottom: -10 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(0,0,0,0.05)" />
+                        <XAxis type="number" hide />
+                        <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 700, fill: 'var(--text-dark)' }} />
+                        <RechartsTooltip cursor={{ fill: 'transparent' }} formatter={(value) => [`${value}%`, 'Status']} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                        <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={20}>
+                          {operationalPerformance.data.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                   </div>
                 </div>
 

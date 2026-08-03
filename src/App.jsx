@@ -45,28 +45,26 @@ function App() {
 
   return (
     <>
-      
-      {/* Global Background Elements matching Login Page exactly */}
-      <div className="bg-blur-blobs">
-        <div className="blob blob-1"></div>
-        <div className="blob blob-2"></div>
-        <div className="blob blob-3"></div>
-      </div>
+      <>
+        <svg className="global-wave-bg" viewBox="0 0 500 800" preserveAspectRatio="none">
+          <path d="M0,0 L220,0 C340,160 180,320 280,480 C360,600 230,730 180,800 L0,800 Z" fill="#FFFFFF" opacity="0.4" />
+          <path d="M0,0 L180,0 C290,180 130,350 220,520 C290,650 180,750 140,800 L0,800 Z" fill="#5CE1E6" opacity="0.2" />
+        </svg>
 
-      {/* Organic Fluid Wave SVG Background Layer */}
-      <svg className="global-wave-bg" viewBox="0 0 500 800" preserveAspectRatio="none">
-        <path d="M0,0 L220,0 C340,160 180,320 280,480 C360,600 230,730 180,800 L0,800 Z" fill="#FFFFFF" opacity="0.85" />
-        <path d="M0,0 L260,0 C380,180 210,350 310,530 C390,650 260,760 210,800 L0,800 Z" fill="#6EE2F1" opacity="0.35" />
-      </svg>
+        <div className="global-stripes-bg">
+          <div className="global-stripe stripe-1"></div>
+          <div className="global-stripe stripe-2"></div>
+          <div className="global-stripe stripe-3"></div>
+        </div>
 
-      {/* Floating Translucent Diagonal Stripes Background Layer */}
-      <div className="global-stripes-bg">
-        <div className="login-stripe stripe-1"></div>
-        <div className="login-stripe stripe-2"></div>
-        <div className="login-stripe stripe-3"></div>
-      </div>
+        {page !== 'dashboard' && (
+          <div className="global-left-brand">
+            <div className="global-brand-dot"></div>
+            <span>Lithin Transport</span>
+          </div>
+        )}
+      </>
 
-     
       {page !== 'dashboard' && (
         <header className="navbar" style={{
           background: 'linear-gradient(135deg, rgba(225, 250, 254, 0.85) 0%, rgba(200, 245, 252, 0.6) 100%)',
@@ -150,7 +148,7 @@ function App() {
       {page === 'dashboard' && <Dashboard onLogout={handleLogout} />}
 
     
-      {page !== 'dashboard' && (
+      {page === 'home' && (
         <footer className="footer">
           <div>
             <div className="logo-container" style={{ display: 'flex', alignItems: 'center', marginBottom: '1.25rem' }}>
