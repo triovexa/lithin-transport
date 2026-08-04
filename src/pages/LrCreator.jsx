@@ -8,7 +8,7 @@ const SuggestionsDropdown = ({ query, list, onSelect, onClose }) => {
   const filtered = list.filter(val => {
     if (!val) return false;
     const valLower = val.toString().toLowerCase();
-    if (!lowerQuery) return true; 
+    if (!lowerQuery) return true;
     return valLower.includes(lowerQuery) && valLower !== lowerQuery;
   }).sort((a, b) => {
     if (!lowerQuery) return a.localeCompare(b);
@@ -241,8 +241,9 @@ const DEFAULT_LR = {
   to: '',
   truckNo: '',
   vehicleType: '',
-  paymentMode: 'TOPAY', 
+  paymentMode: 'TOPAY',
   signatureName: '',
+  includeSignature: true,
   consignorName: '',
   consignorAddress: '',
   consignorGst: '',
@@ -269,7 +270,7 @@ const DEFAULT_LR = {
     aoc: '',
     foc: '',
     others: '',
-    gstRate: '5' 
+    gstRate: '5'
   },
   companyGstin: '33FFSPP0139H1Z8',
   companyPan: 'FFSPP0139H',
@@ -1092,7 +1093,7 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                   className="form-input"
                   value={formData.date}
                   onChange={(e) => handleInputChange('date', e.target.value)}
-                  onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (err) {} }}
+                  onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (err) { } }}
                   style={{ cursor: 'pointer', paddingRight: '36px' }}
                 />
                 <Calendar
@@ -1431,18 +1432,43 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
             </select>
           </div>
 
-          {/* Authorized Signature (Image Priority or Text) */}
+          {/* Authorized Signature (Default Permanent Signature or Text) */}
           <h4 className="form-section-title">Authorized Signature</h4>
           <div style={{
             marginBottom: '1.5rem',
             backgroundColor: '#1E2330',
-            padding: '12px',
-            borderRadius: '6px',
+            padding: '12px 16px',
+            borderRadius: '8px',
             border: '1px solid #262D3D',
             display: 'flex',
             flexDirection: 'column',
             gap: '12px'
           }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: 'rgba(255, 255, 255, 0.04)',
+              padding: '10px 14px',
+              borderRadius: '6px',
+              border: '1px solid rgba(255, 255, 255, 0.08)'
+            }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '0.88rem', fontWeight: '700', color: '#FFFFFF' }}>
+                  Include Official Signature
+                </span>
+                <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>
+                  Show official signature image
+                </span>
+              </div>
+              <input
+                type="checkbox"
+                checked={formData.includeSignature !== false}
+                onChange={(e) => handleInputChange('includeSignature', e.target.checked)}
+                style={{ width: '18px', height: '18px', accentColor: '#00A8C6', cursor: 'pointer' }}
+              />
+            </div>
+
             <div className="form-group">
               <label className="form-label" style={{ color: '#94A3B8' }}>Signatory Name (Text)</label>
               <input
@@ -1452,77 +1478,6 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                 value={formData.signatureName || ''}
                 onChange={(e) => handleInputChange('signatureName', e.target.value)}
               />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label className="form-label" style={{ color: '#94A3B8' }}>Upload Signature Image (1st Priority)</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleSignatureUpload}
-                  style={{ display: 'none' }}
-                  id="sig-upload-input"
-                />
-                <label
-                  htmlFor="sig-upload-input"
-                  className="btn-outline"
-                  style={{
-                    padding: '6px 12px',
-                    fontSize: '0.8rem',
-                    cursor: 'pointer',
-                    borderColor: 'rgba(0, 180, 216, 0.4)',
-                    color: 'var(--primary)',
-                    margin: 0,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    borderRadius: '4px',
-                    borderWidth: '1.5px',
-                    borderStyle: 'solid'
-                  }}
-                >
-                  Upload Signature Image
-                </label>
-                {signatureImage && (
-                  <button
-                    className="btn-outline"
-                    style={{
-                      padding: '6px 12px',
-                      fontSize: '0.8rem',
-                      color: '#EF4444',
-                      borderColor: '#EF4444',
-                      margin: 0,
-                      borderRadius: '4px'
-                    }}
-                    onClick={handleRemoveSignature}
-                  >
-                    Remove Image
-                  </button>
-                )}
-              </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                Supports JPG, PNG, WEBP, etc. Uploading an image takes 1st priority over text signature.
-              </span>
-              {signatureImage && (
-                <div style={{
-                  marginTop: '8px',
-                  backgroundColor: '#FFFFFF',
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  maxHeight: '40px',
-                  alignSelf: 'flex-start'
-                }}>
-                  <img
-                    src={signatureImage}
-                    alt="Signature Preview"
-                    style={{ maxHeight: '32px', objectFit: 'contain' }}
-                  />
-                </div>
-              )}
             </div>
           </div>
 
@@ -2019,17 +1974,19 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                                                 <img src="/Title.png" alt="LITHIN TRANSPORT" style={{ height: '18px', width: 'auto', objectFit: 'contain' }} />
                                               </div>
 
-                                              {/* Signature Rendering: Image has FIRST priority, Text falls back */}
-                                              {signatureImage ? (
+                                              {/* Signature Rendering: Default image (/sign.jpeg) or uploaded image with multiply blend mode */}
+                                              {formData.includeSignature !== false ? (
                                                 <img
-                                                  src={signatureImage}
+                                                  src={signatureImage || '/sign.png'}
                                                   alt="Signature"
                                                   style={{
                                                     position: 'absolute',
                                                     top: '20px',
-                                                    height: '54px',
+                                                    height: '52px',
                                                     maxWidth: '260px',
                                                     objectFit: 'contain',
+                                                    mixBlendMode: 'multiply',
+                                                    filter: 'contrast(135%) brightness(102%)',
                                                     pointerEvents: 'none'
                                                   }}
                                                 />
@@ -2104,53 +2061,53 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                                 <td style={{ width: '32%', verticalAlign: 'top', padding: 0, height: '100%' }}>
                                   <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
-                                     {/* Truck & Vehicle Type & Payment Info */}
-                                     <div style={{ padding: '6px', borderBottom: '3px solid #08103A', fontSize: '0.7rem', lineHeight: '1.4' }}>
-                                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '4px' }}>
-                                         <div>
-                                           <strong style={{ fontSize: '0.65rem' }}>TRUCK NUMBER:</strong>
-                                           <span style={{
-                                             fontWeight: 'bold',
-                                             fontSize: '0.8rem',
-                                             color: '#08103A',
-                                             backgroundImage: `url("${DOTTED_LINE_SVG}")`,
-                                             backgroundSize: '4px 1.25rem',
-                                             backgroundRepeat: 'repeat-x',
-                                             backgroundPosition: 'bottom left',
-                                             minHeight: '1.2rem',
-                                             paddingBottom: '1px',
-                                             display: 'block',
-                                             marginTop: '1px'
-                                           }}>
-                                             {formData.truckNo || '\u00A0'}
-                                           </span>
-                                         </div>
-                                         <div>
-                                           <strong style={{ fontSize: '0.65rem' }}>VEHICLE TYPE:</strong>
-                                           <span style={{
-                                             fontWeight: 'bold',
-                                             fontSize: '0.8rem',
-                                             color: '#08103A',
-                                             backgroundImage: `url("${DOTTED_LINE_SVG}")`,
-                                             backgroundSize: '4px 1.25rem',
-                                             backgroundRepeat: 'repeat-x',
-                                             backgroundPosition: 'bottom left',
-                                             minHeight: '1.2rem',
-                                             paddingBottom: '1px',
-                                             display: 'block',
-                                             marginTop: '1px'
-                                           }}>
-                                             {formData.vehicleType || '\u00A0'}
-                                           </span>
-                                         </div>
-                                       </div>
-                                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
-                                         <strong style={{ fontSize: '0.65rem' }}>PAYMENT:</strong>
-                                         <span className={formData.paymentMode === 'TOPAY' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{ fontSize: '0.62rem' }}>TOPAY</span>
-                                         <span className={formData.paymentMode === 'PAID' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{ fontSize: '0.62rem' }}>PAID</span>
-                                         <span className={formData.paymentMode === 'CREDIT' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{ fontSize: '0.62rem' }}>CREDIT</span>
-                                       </div>
-                                     </div>
+                                    {/* Truck & Vehicle Type & Payment Info */}
+                                    <div style={{ padding: '6px', borderBottom: '3px solid #08103A', fontSize: '0.7rem', lineHeight: '1.4' }}>
+                                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '4px' }}>
+                                        <div>
+                                          <strong style={{ fontSize: '0.65rem' }}>TRUCK NUMBER:</strong>
+                                          <span style={{
+                                            fontWeight: 'bold',
+                                            fontSize: '0.8rem',
+                                            color: '#08103A',
+                                            backgroundImage: `url("${DOTTED_LINE_SVG}")`,
+                                            backgroundSize: '4px 1.25rem',
+                                            backgroundRepeat: 'repeat-x',
+                                            backgroundPosition: 'bottom left',
+                                            minHeight: '1.2rem',
+                                            paddingBottom: '1px',
+                                            display: 'block',
+                                            marginTop: '1px'
+                                          }}>
+                                            {formData.truckNo || '\u00A0'}
+                                          </span>
+                                        </div>
+                                        <div>
+                                          <strong style={{ fontSize: '0.65rem' }}>VEHICLE TYPE:</strong>
+                                          <span style={{
+                                            fontWeight: 'bold',
+                                            fontSize: '0.8rem',
+                                            color: '#08103A',
+                                            backgroundImage: `url("${DOTTED_LINE_SVG}")`,
+                                            backgroundSize: '4px 1.25rem',
+                                            backgroundRepeat: 'repeat-x',
+                                            backgroundPosition: 'bottom left',
+                                            minHeight: '1.2rem',
+                                            paddingBottom: '1px',
+                                            display: 'block',
+                                            marginTop: '1px'
+                                          }}>
+                                            {formData.vehicleType || '\u00A0'}
+                                          </span>
+                                        </div>
+                                      </div>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                                        <strong style={{ fontSize: '0.65rem' }}>PAYMENT:</strong>
+                                        <span className={formData.paymentMode === 'TOPAY' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{ fontSize: '0.62rem' }}>TOPAY</span>
+                                        <span className={formData.paymentMode === 'PAID' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{ fontSize: '0.62rem' }}>PAID</span>
+                                        <span className={formData.paymentMode === 'CREDIT' ? 'payment-pill-selected' : 'payment-pill-unselected'} style={{ fontSize: '0.62rem' }}>CREDIT</span>
+                                      </div>
+                                    </div>
 
                                     {/* Charges breakdown table Wrapper */}
                                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>

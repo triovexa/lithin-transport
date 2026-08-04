@@ -278,6 +278,7 @@ const DEFAULT_INVOICE = {
   bankBranch: 'NATARAMPALLI-635651 & IFSC: IOBA0003984',
   bankHolderName: 'M/S LITHIN TRANSPORT',
   signatoryName: '',
+  includeSignature: true,
   gstPercentage: '',
   wordsOverride: ''
 };
@@ -1707,6 +1708,32 @@ export default function Dashboard({ onLogout }) {
 
                 {/* Signatory (Fully Editable) */}
                 <h4 className="form-section-title">Signatory Details</h4>
+                <div style={{
+                  marginBottom: '1rem',
+                  backgroundColor: '#1E2330',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid #262D3D',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontSize: '0.88rem', fontWeight: '700', color: '#FFFFFF' }}>
+                      Include Official Signature
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>
+                      Show official signature image 
+                    </span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={formData.includeSignature !== false}
+                    onChange={(e) => handleInputChange('includeSignature', e.target.checked)}
+                    style={{ width: '18px', height: '18px', accentColor: '#00A8C6', cursor: 'pointer' }}
+                  />
+                </div>
+
                 <div className="form-group">
                   <label className="form-label">Authorised Signatory Name</label>
                   <input
@@ -2058,14 +2085,31 @@ export default function Dashboard({ onLogout }) {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           textAlign: 'center',
-                          minHeight: '90px'
+                          minHeight: '100px',
+                          position: 'relative'
                         }}>
                           <div style={{ fontWeight: '700', textAlign: 'center', textTransform: 'uppercase', fontSize: '0.72rem' }}>
                             for {formData.companyName}
                           </div>
+
+                          {formData.includeSignature !== false && (
+                            <img
+                              src="/sign.png"
+                              alt="Official Signature"
+                              style={{
+                                height: '42px',
+                                maxWidth: '160px',
+                                objectFit: 'contain',
+                                mixBlendMode: 'multiply',
+                                filter: 'contrast(135%) brightness(102%)',
+                                margin: '2px 0'
+                              }}
+                            />
+                          )}
+
                           <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
                             {formData.signatoryName && (
-                              <strong style={{ display: 'block', fontSize: '0.78rem', textAlign: 'center', fontWeight: '800', marginBottom: '2px' }}>
+                              <strong style={{ display: 'block', fontSize: '0.75rem', textAlign: 'center', fontWeight: '800', marginBottom: '1px' }}>
                                 {formData.signatoryName}
                               </strong>
                             )}
