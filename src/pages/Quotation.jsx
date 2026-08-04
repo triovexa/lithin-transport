@@ -521,15 +521,6 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
             <div style={{ padding: '0', width: '80px', height: '80px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <img src="/logo.png" alt="LT Logo" style={{ width: '76px', height: '76px', objectFit: 'contain' }} />
             </div>
-            <span style={{ 
-              position: 'absolute', 
-              top: '0px', 
-              right: '0px', 
-              fontSize: '0.65rem', 
-              fontWeight: 'bold', 
-              color: '#000',
-              lineHeight: '1'
-            }}>TM</span>
           </div>
           <div style={{ flex: 1, textAlign: 'center', marginRight: '80px' }}>
             <h1 style={{ fontSize: '20px', fontWeight: 'bold', textDecoration: 'underline', margin: '0 0 4px 0' }}>
@@ -870,15 +861,6 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
                   <img src="/logo.png" alt="LT Logo" style={{ width: '85px', height: '85px', objectFit: 'contain' }} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
                   <span style={{ display: 'none', fontWeight: 'bold', textAlign: 'center', fontSize: '16px' }}>Logo<br/>LT</span>
                 </div>
-                <span style={{ 
-                  position: 'absolute', 
-                  top: '0px', 
-                  right: '0px', 
-                  fontSize: '0.75rem', 
-                  fontWeight: 'bold', 
-                  color: '#000',
-                  lineHeight: '1'
-                }}>TM</span>
               </div>
               <div>
                 <h1 style={{ fontSize: '22px', fontWeight: 'bold', margin: '0 0 4px 0', textTransform: 'uppercase' }}>LITHIN TRANSPORT</h1>

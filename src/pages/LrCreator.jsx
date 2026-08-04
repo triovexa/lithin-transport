@@ -1564,15 +1564,6 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                             <div style={{ width: '8%', borderRight: '2px solid #08103A', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2px' }}>
                               <div style={{ position: 'relative', display: 'inline-block' }}>
                                 <img src="/logo.png" alt="Logo" style={{ width: '70px', height: '56px', objectFit: 'contain' }} />
-                                <span style={{
-                                  position: 'absolute',
-                                  top: '1px',
-                                  right: '0px',
-                                  fontSize: '0.45rem',
-                                  fontWeight: 'bold',
-                                  color: '#08103A',
-                                  lineHeight: '1'
-                                }}>TM</span>
                               </div>
                             </div>
 
@@ -1600,7 +1591,7 @@ export default function LrCreator({ loadedLr = null, triggerToast = null }) {
                               </table>
                             </div>
 
-                            {/* Main Title Box */}
+                          
                             <div style={{ width: '56%', padding: '2px 0', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                               <div style={{ paddingLeft: '20px', margin: '0 0 2px 0', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                                 <img src="/Title.png" alt="LITHIN TRANSPORT" style={{ height: '45px', width: '500px', maxWidth: '100%', objectFit: 'contain' }} />

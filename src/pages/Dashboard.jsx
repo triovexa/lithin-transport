@@ -28,15 +28,6 @@ const LTLogo = () => (
         filter: 'brightness(1.2) contrast(1.1) saturate(1.15)'
       }}
     />
-    <span style={{
-      position: 'absolute',
-      top: '0px',
-      right: '0px',
-      fontSize: '0.65rem',
-      fontWeight: 'bold',
-      color: '#000000',
-      lineHeight: '1'
-    }}>TM</span>
   </div>
 );
 
@@ -521,11 +512,10 @@ export default function Dashboard({ onLogout }) {
     setSubtotal(calculatedSubtotal);
 
     const rcmStatus = formData.rcmStatus || 'Exempted';
-    const gstPct = rcmStatus === 'Exempted' ? 0 : (parseFloat(formData.gstPercentage) || 0);
+    const gstPct = parseFloat(formData.gstPercentage) || (rcmStatus === 'RCM' ? 18 : 0);
     const cgstRate = gstPct / 2;
     const sgstRate = gstPct / 2;
 
-    // Only add to grand total if RCM status is 'No' (Normal GST)
     const cgst = (calculatedSubtotal * cgstRate) / 100;
     const sgst = (calculatedSubtotal * sgstRate) / 100;
 
@@ -535,7 +525,7 @@ export default function Dashboard({ onLogout }) {
 
     setCgstAmount(cgst);
     setSgstAmount(sgst);
-    setIgstAmount(0); // IGST removed
+    setIgstAmount(0);
     setTotalAmount(grandTotal);
 
     if (!formData.wordsOverride) {
@@ -1510,7 +1500,7 @@ export default function Dashboard({ onLogout }) {
                 <h4 className="form-section-title">Transport & Shipment Details</h4>
                 <div className="form-grid-2">
                   <AutocompleteInput
-                    label="Vessel / Flight / Truck No"
+                    label="Tracking No."
                     value={formData.vesselFlightNo}
                     onChange={(e) => handleInputChange('vesselFlightNo', e.target.value)}
                     suggestions={suggestionsRegistry.vessels}
@@ -1526,14 +1516,14 @@ export default function Dashboard({ onLogout }) {
                 </div>
                 <div className="form-grid-2">
                   <AutocompleteInput
-                    label="City/Port of Loading"
+                    label="City of Loading"
                     value={formData.portOfLoading}
                     onChange={(e) => handleInputChange('portOfLoading', e.target.value)}
                     suggestions={suggestionsRegistry.cities}
                     onSelectSuggestion={(val) => handleInputChange('portOfLoading', val)}
                   />
                   <AutocompleteInput
-                    label="City/Port of Discharge"
+                    label="City of Unloading"
                     value={formData.portOfDischarge}
                     onChange={(e) => handleInputChange('portOfDischarge', e.target.value)}
                     suggestions={suggestionsRegistry.cities}
@@ -1810,12 +1800,12 @@ export default function Dashboard({ onLogout }) {
                             <div style={{ fontSize: '1.18rem', fontWeight: '800', color: '#0F6236', lineHeight: 1.1 }}>
                               {formData.companyName}
                             </div>
-                            <div style={{ fontSize: '0.72rem', fontWeight: '800', color: '#A82C2C', textTransform: 'uppercase', marginTop: '3px', letterSpacing: '0.5px' }}>Export cargo movers</div>
                             <div style={{ fontSize: '0.68rem', marginTop: '3px', color: '#000000', lineHeight: 1.3 }}>
                               {formData.companyAddress}<br />
-                              <strong>GSTIN/UIN:</strong> {formData.companyGst} | <strong>State Name:</strong> {formData.companyState}<br />
-                              <strong>Website:</strong> {formData.companyWebsite} | <strong>E-Mail:</strong> {formData.companyEmail}<br />
-                              <strong style={{ display: 'block', marginTop: '2px', color: '#1E293B', fontSize: '0.62rem' }}>ISO 9001:2015 Certified transport company</strong>
+                              <strong>GSTIN/UIN:</strong> {formData.companyGst}<br />
+                              <strong>MSME Reg:</strong> UDYAM-TN-30-0112020<br />
+                              <strong>Mobile:</strong> +91 95667 38884, +91 93423 17996<br />
+                              <strong>Website:</strong> {formData.companyWebsite} | <strong>E-Mail:</strong> {formData.companyEmail}
                             </div>
                           </div>
                         </div>
@@ -1867,7 +1857,7 @@ export default function Dashboard({ onLogout }) {
                         {/* Row 3 */}
                         <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', borderBottom: '1.5px solid #000000', minHeight: '38px' }}>
                           <div style={{ borderRight: '1.5px solid #000000', padding: '4px' }}>
-                            <span style={{ display: 'block', fontSize: '0.6rem', color: '#555' }}>Vessel/Flight/Truck No.</span>
+                            <span style={{ display: 'block', fontSize: '0.6rem', color: '#555' }}>Tracking No.</span>
                             <strong style={{ fontSize: '0.75rem' }}>{formData.vesselFlightNo}</strong>
                           </div>
                           <div style={{ padding: '4px' }}>
@@ -1879,11 +1869,11 @@ export default function Dashboard({ onLogout }) {
                         {/* Row 4 */}
                         <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', borderBottom: '1.5px solid #000000', minHeight: '38px' }}>
                           <div style={{ borderRight: '1.5px solid #000000', padding: '4px' }}>
-                            <span style={{ display: 'block', fontSize: '0.6rem', color: '#555' }}>City/Port of Loading</span>
+                            <span style={{ display: 'block', fontSize: '0.6rem', color: '#555' }}>City of Loading</span>
                             <strong>{formData.portOfLoading}</strong>
                           </div>
                           <div style={{ padding: '4px' }}>
-                            <span style={{ display: 'block', fontSize: '0.6rem', color: '#555' }}>City/Port of Discharge</span>
+                            <span style={{ display: 'block', fontSize: '0.6rem', color: '#555' }}>City of Unloading</span>
                             <strong>{formData.portOfDischarge}</strong>
                           </div>
                         </div>
@@ -2021,9 +2011,11 @@ export default function Dashboard({ onLogout }) {
                       backgroundColor: '#FFFFFF',
                       lineHeight: 1.3
                     }}>
-                      <span>Whether GST is payable on Reverse Charge basis (RCM): <strong>{
-                        formData.rcmStatus === 'RCM' ? 'Yes' : (formData.rcmStatus === 'No' ? 'No' : 'Exempted')
-                      }</strong></span>
+                      {formData.rcmStatus === 'RCM' || formData.gstPercentage === '18' ? (
+                        <span>GST Payable on Reverse Charge Basis (RCM): <strong>Buyer</strong></span>
+                      ) : (
+                        <span>Whether GST is payable on Reverse Charge basis (RCM): <strong>{formData.rcmStatus === 'No' ? 'No' : 'Exempted'}</strong></span>
+                      )}
                     </div>
 
                     {/* Bottom Section: Words block on left, Bank + Signatory on right */}
