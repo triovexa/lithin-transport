@@ -512,14 +512,17 @@ export default function Dashboard({ onLogout }) {
     setSubtotal(calculatedSubtotal);
 
     const rcmStatus = formData.rcmStatus || 'Exempted';
-    const gstPct = parseFloat(formData.gstPercentage) || (rcmStatus === 'RCM' ? 18 : 0);
-    const cgstRate = gstPct / 2;
-    const sgstRate = gstPct / 2;
+    const effectiveGstPct = (rcmStatus === 'Exempted')
+      ? 0
+      : (parseFloat(formData.gstPercentage) || (rcmStatus === 'RCM' || rcmStatus === 'No' ? 18 : 0));
+
+    const cgstRate = effectiveGstPct / 2;
+    const sgstRate = effectiveGstPct / 2;
 
     const cgst = (calculatedSubtotal * cgstRate) / 100;
     const sgst = (calculatedSubtotal * sgstRate) / 100;
 
-    const grandTotal = rcmStatus === 'No'
+    const grandTotal = effectiveGstPct > 0
       ? (calculatedSubtotal + cgst + sgst)
       : calculatedSubtotal;
 
@@ -914,11 +917,14 @@ export default function Dashboard({ onLogout }) {
     };
   })();
 
-  // Determine Title based on GST percentage
-  const gstPct = parseFloat(formData.gstPercentage) || 0;
-  const billTitle = gstPct > 0 ? "Tax Invoice" : "Bill Of Supply";
-  const displayCgstRate = gstPct / 2;
-  const displaySgstRate = gstPct / 2;
+  // Determine Title and GST rates based on effective GST percentage
+  const currentRcmStatus = formData.rcmStatus || 'Exempted';
+  const effectiveGstPct = (currentRcmStatus === 'Exempted')
+    ? 0
+    : (parseFloat(formData.gstPercentage) || (currentRcmStatus === 'RCM' || currentRcmStatus === 'No' ? 18 : 0));
+  const billTitle = effectiveGstPct > 0 ? "Tax Invoice" : "Bill Of Supply";
+  const displayCgstRate = effectiveGstPct / 2;
+  const displaySgstRate = effectiveGstPct / 2;
 
   return (
     <div className="dashboard-layout">
@@ -1473,13 +1479,14 @@ export default function Dashboard({ onLogout }) {
                         setFormData(prev => ({
                           ...prev,
                           rcmStatus: val,
-                          gstPercentage: val === 'Exempted' ? '' : prev.gstPercentage
+                          gstPercentage: val === 'Exempted' ? '' : (prev.gstPercentage || '18')
                         }));
                       }}
                       style={{ height: '46px' }}
                     >
-                      <option value="Exempted">Exempted</option>
-                      <option value="RCM">RCM</option>
+                      <option value="Exempted">Exempted (No GST)</option>
+                      <option value="RCM">RCM (Reverse Charge Basis)</option>
+                      <option value="No">No (Forward Charge / Regular GST)</option>
                     </select>
                   </div>
                   <div className="form-group">
@@ -1488,9 +1495,9 @@ export default function Dashboard({ onLogout }) {
                       type="number"
                       step="any"
                       className="form-input"
-                      placeholder="e.g. 5"
+                      placeholder="e.g. 18 or 5"
                       disabled={formData.rcmStatus === 'Exempted'}
-                      value={formData.rcmStatus === 'Exempted' ? '' : formData.gstPercentage}
+                      value={formData.rcmStatus === 'Exempted' ? '' : (formData.gstPercentage || (formData.rcmStatus === 'RCM' || formData.rcmStatus === 'No' ? '18' : ''))}
                       onChange={(e) => handleInputChange('gstPercentage', e.target.value)}
                     />
                   </div>
@@ -1956,7 +1963,7 @@ export default function Dashboard({ onLogout }) {
                             <tr style={{ fontWeight: 'bold' }}>
                               <td style={{ borderRight: '1.5px solid #000000', padding: '4px' }}></td>
                               <td colSpan={4} style={{ borderRight: '1.5px solid #000000', textAlign: 'right', padding: '4px 6px' }}>
-                                CGST ( {displayCgstRate ? `${displayCgstRate} %` : '        %'} )
+                                CGST ( {displayCgstRate} % )
                               </td>
                               <td style={{ textAlign: 'right', padding: '4px 6px', whiteSpace: 'nowrap' }}>{cgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                             </tr>
@@ -1967,7 +1974,7 @@ export default function Dashboard({ onLogout }) {
                             <tr style={{ fontWeight: 'bold' }}>
                               <td style={{ borderRight: '1.5px solid #000000', padding: '4px' }}></td>
                               <td colSpan={4} style={{ borderRight: '1.5px solid #000000', textAlign: 'right', padding: '4px 6px' }}>
-                                SGST ( {displaySgstRate ? `${displaySgstRate} %` : '        %'} )
+                                SGST ( {displaySgstRate} % )
                               </td>
                               <td style={{ textAlign: 'right', padding: '4px 6px', whiteSpace: 'nowrap' }}>{sgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                             </tr>
@@ -2011,7 +2018,7 @@ export default function Dashboard({ onLogout }) {
                       backgroundColor: '#FFFFFF',
                       lineHeight: 1.3
                     }}>
-                      {formData.rcmStatus === 'RCM' || formData.gstPercentage === '18' ? (
+                      {formData.rcmStatus === 'RCM' ? (
                         <span>GST Payable on Reverse Charge Basis (RCM): <strong>Buyer</strong></span>
                       ) : (
                         <span>Whether GST is payable on Reverse Charge basis (RCM): <strong>{formData.rcmStatus === 'No' ? 'No' : 'Exempted'}</strong></span>
