@@ -439,8 +439,13 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
     const clone = element.cloneNode(true);
     clone.style.transform = 'none';
     clone.style.width = '800px';
+    clone.style.height = '1120px';
+    clone.style.maxHeight = '1120px';
     clone.style.margin = '0';
     clone.style.boxSizing = 'border-box';
+    clone.style.overflow = 'hidden';
+    clone.style.pageBreakInside = 'avoid';
+    clone.style.breakInside = 'avoid';
 
     const textareas = clone.querySelectorAll('.pdf-textarea');
     textareas.forEach(ta => { ta.style.border = 'none'; });
@@ -454,11 +459,12 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
     document.body.appendChild(tempContainer);
 
     const opt = {
-      margin:       0.2,
+      margin:       0,
       filename:     filename,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 3, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
-      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+      pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
     };
     
     window.html2pdf().set(opt).from(clone).save().then(() => {
@@ -496,11 +502,11 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
       
       {type === 'export' ? (
         <>
-          {/* Responsive Container with scale wrapper for Quotation Content */}
+          {/* Responsive Container with scale wrapper for Export Quotation Content */}
           <div className="quotation-preview-container" ref={quotationContainerRef} style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
             <div style={{
               width: `${800 * quotationScale}px`,
-              height: `${cardHeight * quotationScale}px`,
+              height: `${1120 * quotationScale}px`,
               position: 'relative',
               margin: '0 auto'
             }}>
@@ -511,327 +517,328 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
                 top: 0,
                 left: 0,
                 width: '800px',
-                height: `${cardHeight}px`
+                height: '1120px'
               }}>
-                <div id="quotation-content" ref={quotationCardRef} style={{ backgroundColor: '#fff', color: '#000', padding: '20px 30px', fontFamily: '"Times New Roman", Times, serif', width: '800px', border: '1px solid #ccc', boxShadow: '0 0 10px rgba(0,0,0,0.1)', boxSizing: 'border-box' }}>
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px', borderBottom: '1px solid #000', paddingBottom: '10px', position: 'relative' }}>
-          {/* Logo container with TM (No border) */}
-          <div style={{ position: 'relative', display: 'inline-block', marginRight: '20px' }}>
-            <div style={{ padding: '0', width: '80px', height: '80px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <img src="/logo.png" alt="LT Logo" style={{ width: '76px', height: '76px', objectFit: 'contain' }} />
+                <div id="quotation-content" ref={quotationCardRef} style={{ backgroundColor: '#ffffff', color: '#000000', fontFamily: '"Times New Roman", Times, serif', width: '800px', height: '1120px', position: 'relative', boxShadow: '0 0 10px rgba(0,0,0,0.1)', boxSizing: 'border-box', overflow: 'hidden' }}>
+                  {/* Background Letterhead Image */}
+                  <img
+                    src="/quotation_letterhead.png"
+                    alt="Letterhead Background"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '800px',
+                      height: '1120px',
+                      objectFit: 'fill',
+                      zIndex: 0,
+                      pointerEvents: 'none'
+                    }}
+                  />
+
+                  {/* Foreground Content Container */}
+                  <div style={{
+                    position: 'relative',
+                    zIndex: 1,
+                    padding: '170px 45px 105px 45px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justify: 'space-between',
+                    height: '1120px',
+                    boxSizing: 'border-box'
+                  }}>
+                    {/* Main Content Area */}
+                    <div>
+                      {/* Sub-Header Title */}
+                      <div style={{ textAlign: 'center', marginBottom: '14px' }}>
+                        <h2 style={{ fontSize: '17px', fontWeight: 'bold', textDecoration: 'underline', margin: '0', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                          EXPORT RATE QUOTATION
+                        </h2>
+                      </div>
+
+                      {/* Address & Date Flex Container */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                        {/* Address */}
+                        <div style={{ textAlign: 'left', fontSize: '12px' }}>
+                          <p style={{ fontWeight: 'bold', margin: '0 0 2px 0', textAlign: 'left' }}>To,</p>
+                          <AutocompleteInlineTextarea
+                            value={toAddress}
+                            onChange={(e) => setToAddress(e.target.value)}
+                            placeholder="Enter Your Address"
+                            rows={3}
+                            suggestions={suggestionsRegistry.toAddresses}
+                            style={{
+                              width: '290px',
+                              border: '1px dashed #999',
+                              background: 'rgba(255,255,255,0.75)',
+                              textAlign: 'left',
+                              fontWeight: 'bold',
+                              fontSize: '12px',
+                              outline: 'none',
+                              fontFamily: '"Times New Roman", Times, serif',
+                              resize: 'none',
+                              padding: '4px'
+                            }}
+                            className="pdf-textarea"
+                          />
+                        </div>
+                        {/* Date Picker */}
+                        <div style={{ textAlign: 'right', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
+                          <label style={{ fontWeight: 'bold', fontSize: '12px' }}>Date:</label>
+                          <span className="pdf-date-text" style={{ display: 'none', fontSize: '12px', fontWeight: 'bold' }}>
+                            {formatDate(quotationDate)}
+                          </span>
+                          <div className="pdf-date-input" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+                            <input
+                              type="date"
+                              value={quotationDate}
+                              onChange={(e) => setQuotationDate(e.target.value)}
+                              onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (err) {} }}
+                              style={{
+                                border: '1px dashed #999',
+                                background: 'rgba(255,255,255,0.75)',
+                                outline: 'none',
+                                fontFamily: '"Times New Roman", Times, serif',
+                                fontSize: '12px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                padding: '4px 22px 4px 4px',
+                                width: '125px'
+                              }}
+                            />
+                            <Calendar size={13} style={{ position: 'absolute', right: '4px', pointerEvents: 'none', color: '#000000' }} />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Full Load Section */}
+                      <div style={{ textAlign: 'center', marginBottom: '6px' }}>
+                        <h4 style={{ fontSize: '13px', fontWeight: 'bold', textDecoration: 'underline', margin: '0' }}>
+                          FULL LOAD
+                        </h4>
+                      </div>
+
+                      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '14px', textAlign: 'center', fontSize: '11.5px', backgroundColor: 'rgba(255,255,255,0.95)' }}>
+                        <thead>
+                          <tr style={{ backgroundColor: '#B0C4DE' }}>
+                            <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>CONTAINER SIZE</th>
+                            <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>Jeep</th>
+                            <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>14 FEET</th>
+                            <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>17 FEET</th>
+                            <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>20 FEET</th>
+                          </tr>
+                          <tr style={{ backgroundColor: '#B0C4DE' }}>
+                            <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>CAPACITY - (CBM)</th>
+                            <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>1 - 7 CBM</th>
+                            <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>8 - 15 CBM</th>
+                            <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>16 - 21 CBM</th>
+                            <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>22 - 31 CBM</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>TUTICORIN</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>8800</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>13000</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>15000</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>17000</td>
+                          </tr>
+                          <tr>
+                            <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>CHENNAI - AIR</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>9000</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>13500</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>16000</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>18000</td>
+                          </tr>
+                          <tr>
+                            <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>CHENNAI - SEA</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>9500</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>14000</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>16500</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>18000</td>
+                          </tr>
+                          <tr>
+                            <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>COCHIN</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>9000</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>13500</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>14500</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>16500</td>
+                          </tr>
+                          <tr>
+                            <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>MUMBAI</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>30000</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>-</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>-</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>42000</td>
+                          </tr>
+                          <tr>
+                            <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>BANGALORE</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>8000</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>11500</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>13000</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>15500</td>
+                          </tr>
+                          <tr>
+                            <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>LOCAL ICD</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>2500</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>3500</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>4000</td>
+                            <td style={{ border: '1px solid #000', padding: '3px' }}>5000</td>
+                          </tr>
+                          <tr>
+                            <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>HALTING</td>
+                            <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>800</td>
+                            <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>1000</td>
+                            <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>1500</td>
+                            <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>1800</td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      {/* CBM RATE Section */}
+                      <div style={{ textAlign: 'center', marginBottom: '6px' }}>
+                        <h4 style={{ fontSize: '13px', fontWeight: 'bold', textDecoration: 'underline', margin: '0' }}>
+                          CBM RATE
+                        </h4>
+                      </div>
+
+                      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '14px', textAlign: 'center', fontSize: '11.5px', backgroundColor: 'rgba(255,255,255,0.95)' }}>
+                        <thead>
+                          <tr style={{ backgroundColor: '#B0C4DE' }}>
+                            <th style={{ border: '1px solid #000', padding: '4px' }}></th>
+                            <th style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>PRICE PER CBM</th>
+                            <th style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>PICK UP AND<br />DELIVERY CHARGES</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold', textAlign: 'left', paddingLeft: '8px' }}>TIRUPUR TO MUMBAI PER CBM</td>
+                            <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>1400</td>
+                            <td style={{ border: '1px solid #000', padding: '0', fontWeight: 'bold', width: '20%' }}>
+                              <input 
+                                type="text" 
+                                value={deliveryCharges.mumbaiCbm} 
+                                onChange={(e) => setDeliveryCharges({...deliveryCharges, mumbaiCbm: e.target.value})} 
+                                style={inputStyle}
+                              />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold', textAlign: 'left', paddingLeft: '8px' }}>TIRUPUR TO MUMBAI FABRIC</td>
+                            <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>7 Rs per kg</td>
+                            <td style={{ border: '1px solid #000', padding: '0', fontWeight: 'bold' }}>
+                              <input 
+                                type="text" 
+                                value={deliveryCharges.mumbaiFabric} 
+                                onChange={(e) => setDeliveryCharges({...deliveryCharges, mumbaiFabric: e.target.value})} 
+                                style={inputStyle}
+                              />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold', textAlign: 'left', paddingLeft: '8px' }}>TIRUPUR TO TUTICORIN</td>
+                            <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>850</td>
+                            <td style={{ border: '1px solid #000', padding: '0', fontWeight: 'bold' }}>
+                              <input 
+                                type="text" 
+                                value={deliveryCharges.tuticorin} 
+                                onChange={(e) => setDeliveryCharges({...deliveryCharges, tuticorin: e.target.value})} 
+                                style={inputStyle}
+                              />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold', textAlign: 'left', paddingLeft: '8px' }}>TIRUPUR TO CHENNAI - SEA</td>
+                            <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>1000</td>
+                            <td style={{ border: '1px solid #000', padding: '0', fontWeight: 'bold' }}>
+                              <input 
+                                type="text" 
+                                value={deliveryCharges.chennaiSea} 
+                                onChange={(e) => setDeliveryCharges({...deliveryCharges, chennaiSea: e.target.value})} 
+                                style={inputStyle}
+                              />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold', textAlign: 'left', paddingLeft: '8px' }}>TIRUPUR TO CHENNAI - AIR</td>
+                            <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>1000</td>
+                            <td style={{ border: '1px solid #000', padding: '0', fontWeight: 'bold' }}>
+                              <input 
+                                type="text" 
+                                value={deliveryCharges.chennaiAir} 
+                                onChange={(e) => setDeliveryCharges({...deliveryCharges, chennaiAir: e.target.value})} 
+                                style={inputStyle}
+                              />
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold', textAlign: 'left', paddingLeft: '8px' }}>TIRUPUR TO BANGALORE - AIR</td>
+                            <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>1000</td>
+                            <td style={{ border: '1px solid #000', padding: '0', fontWeight: 'bold' }}>
+                              <input 
+                                type="text" 
+                                value={deliveryCharges.bangaloreAir} 
+                                onChange={(e) => setDeliveryCharges({...deliveryCharges, bangaloreAir: e.target.value})} 
+                                style={inputStyle}
+                              />
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Bottom Notes */}
+                    <div style={{ fontSize: '12px', lineHeight: '1.4' }}>
+                      <p style={{ fontWeight: 'bold', margin: '3px 0' }}>
+                        Urgent Load Consider as a Full Load Only Timing Load
+                      </p>
+                      <p style={{ fontWeight: 'bold', margin: '3px 0' }}>
+                        This Price Is Valid for Present Fuel Price; Festival & Lockdown time Extra Charges.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div style={{ flex: 1, textAlign: 'center', marginRight: '80px' }}>
-            <h1 style={{ fontSize: '20px', fontWeight: 'bold', textDecoration: 'underline', margin: '0 0 4px 0' }}>
-              LITHIN TRANSPORT
-            </h1>
-            <h2 style={{ fontSize: '13px', fontWeight: 'bold', textDecoration: 'underline', margin: '0 0 8px 0' }}>
-              EXPERT IN EXPORT CARGO MOVERS
-            </h2>
-            <p style={{ fontSize: '11px', fontWeight: 'bold', margin: '0 0 4px 0' }}>
-              (REGULAR SERVICE TO: MUMBAI, CHENNAI, BANGALORE, TUTICORIN, COCHIN, PAN INDIA)
-            </p>
-            <p style={{ fontSize: '11px', margin: '0 0 4px 0' }}>
-              4/252, Vedivattam, Agraharam vill and po, Natrampalli TK, Tirupattur DT. 635651
-            </p>
-            <p style={{ fontSize: '12px', fontWeight: 'bold', margin: '0 0 4px 0' }}>
-              Contact: +91 95667 38884, +91 93423 17996
-            </p>
-            <p style={{ fontSize: '11px', margin: '0' }}>
-              Mail Id : <a href="mailto:lithintransports@gmail.com" style={{ color: 'blue', textDecoration: 'underline' }}>lithintransports@gmail.com</a> , Website : <a href="https://www.lithintransport.in" style={{ color: 'black', textDecoration: 'none' }}>www.lithintransport.in</a>
-            </p>
-          </div>
-        </div>
-
-        {/* Title */}
-        <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 'bold', textDecoration: 'underline', margin: '0' }}>
-            RATE QUATATION
-          </h3>
-        </div>
-
-        {/* Address & Date Flex Container */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-          {/* Address */}
-          <div style={{ textAlign: 'left', fontSize: '12px' }}>
-            <p style={{ fontWeight: 'bold', margin: '0 0 4px 0', textAlign: 'left' }}>To,</p>
-            <AutocompleteInlineTextarea
-              value={toAddress}
-              onChange={(e) => setToAddress(e.target.value)}
-              placeholder="Enter Your Address"
-              rows={3}
-              suggestions={suggestionsRegistry.toAddresses}
-              style={{
-                width: '280px',
-                border: '1px dashed #ccc',
-                background: 'transparent',
-                textAlign: 'left',
-                fontWeight: 'bold',
-                fontSize: '12px',
-                outline: 'none',
-                fontFamily: '"Times New Roman", Times, serif',
-                resize: 'none',
-                padding: '4px'
-              }}
-              className="pdf-textarea"
-            />
-          </div>
-          {/* Date Picker */}
-          <div style={{ textAlign: 'right', fontSize: '12px', paddingRight: '20px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
-            <label style={{ fontWeight: 'bold', fontSize: '12px' }}>Date:</label>
-            <span className="pdf-date-text" style={{ display: 'none', fontSize: '12px', fontWeight: 'bold' }}>
-              {formatDate(quotationDate)}
-            </span>
-            <div className="pdf-date-input" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-              <input
-                type="date"
-                value={quotationDate}
-                onChange={(e) => setQuotationDate(e.target.value)}
-                onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (err) {} }}
-                style={{
-                  border: '1px dashed #ccc',
-                  background: 'transparent',
-                  outline: 'none',
-                  fontFamily: '"Times New Roman", Times, serif',
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  padding: '4px 22px 4px 4px',
-                  width: '125px'
-                }}
-              />
-              <Calendar size={13} style={{ position: 'absolute', right: '4px', pointerEvents: 'none', color: '#000000' }} />
-            </div>
-          </div>
-        </div>
-
-        {/* Full Load Section */}
-        <div style={{ textAlign: 'center', marginBottom: '8px' }}>
-          <h4 style={{ fontSize: '14px', fontWeight: 'bold', textDecoration: 'underline', margin: '0' }}>
-            FULL LOAD
-          </h4>
-        </div>
-
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '15px', textAlign: 'center', fontSize: '12px' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#ADD8E6' }}>
-              <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>CONTAINER SIZE</th>
-              <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>Jeep</th>
-              <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>14 FEET</th>
-              <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>17 FEET</th>
-              <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>20 FEET</th>
-            </tr>
-            <tr style={{ backgroundColor: '#ADD8E6' }}>
-              <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>CAPACITY - (CBM)</th>
-              <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>1 - 7 CBM</th>
-              <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>8 - 15 CBM</th>
-              <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>16 - 21 CBM</th>
-              <th style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>22 - 31 CBM</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>TUTICORIN</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>8800</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>13000</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>15000</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>17000</td>
-            </tr>
-            <tr>
-              <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>CHENNAI - AIR</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>9000</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>13500</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>16000</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>18000</td>
-            </tr>
-            <tr>
-              <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>CHENNAI - SEA</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>9500</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>14000</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>16500</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>18000</td>
-            </tr>
-            <tr>
-              <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>COCHIN</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>9000</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>13500</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>14500</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>16500</td>
-            </tr>
-            <tr>
-              <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>MUMBAI</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>30000</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>-</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>-</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>42000</td>
-            </tr>
-            <tr>
-              <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>BANGALORE</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>8000</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>11500</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>13000</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>15500</td>
-            </tr>
-            <tr>
-              <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>LOCAL ICD</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>2500</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>3500</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>4000</td>
-              <td style={{ border: '1px solid #000', padding: '3px' }}>5000</td>
-            </tr>
-            <tr>
-              <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>HALTING</td>
-              <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>800</td>
-              <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>1000</td>
-              <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>1500</td>
-              <td style={{ border: '1px solid #000', padding: '3px', fontWeight: 'bold' }}>1800</td>
-            </tr>
-          </tbody>
-        </table>
-
-        {/* CBM RATE Section */}
-        <div style={{ textAlign: 'center', marginBottom: '8px' }}>
-          <h4 style={{ fontSize: '14px', fontWeight: 'bold', textDecoration: 'underline', margin: '0' }}>
-            CBM RATE
-          </h4>
-        </div>
-
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '15px', textAlign: 'center', fontSize: '12px' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#ADD8E6' }}>
-              <th style={{ border: '1px solid #000', padding: '4px' }}></th>
-              <th style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>PRICE PER CBM</th>
-              <th style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>PICK UP AND<br />DELIVERY CHARGES</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold', textAlign: 'left', paddingLeft: '8px' }}>TIRUPUR TO MUMBAI PER CBM</td>
-              <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>1400</td>
-              <td style={{ border: '1px solid #000', padding: '0', fontWeight: 'bold', width: '20%' }}>
-                <input 
-                  type="text" 
-                  value={deliveryCharges.mumbaiCbm} 
-                  onChange={(e) => setDeliveryCharges({...deliveryCharges, mumbaiCbm: e.target.value})} 
-                  style={inputStyle}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold', textAlign: 'left', paddingLeft: '8px' }}>TIRUPUR TO MUMBAI FABRIC</td>
-              <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>7 Rs per kg</td>
-              <td style={{ border: '1px solid #000', padding: '0', fontWeight: 'bold' }}>
-                <input 
-                  type="text" 
-                  value={deliveryCharges.mumbaiFabric} 
-                  onChange={(e) => setDeliveryCharges({...deliveryCharges, mumbaiFabric: e.target.value})} 
-                  style={inputStyle}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold', textAlign: 'left', paddingLeft: '8px' }}>TIRUPUR TO TUTICORIN</td>
-              <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>850</td>
-              <td style={{ border: '1px solid #000', padding: '0', fontWeight: 'bold' }}>
-                <input 
-                  type="text" 
-                  value={deliveryCharges.tuticorin} 
-                  onChange={(e) => setDeliveryCharges({...deliveryCharges, tuticorin: e.target.value})} 
-                  style={inputStyle}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold', textAlign: 'left', paddingLeft: '8px' }}>TIRUPUR TO CHENNAI - SEA</td>
-              <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>1000</td>
-              <td style={{ border: '1px solid #000', padding: '0', fontWeight: 'bold' }}>
-                <input 
-                  type="text" 
-                  value={deliveryCharges.chennaiSea} 
-                  onChange={(e) => setDeliveryCharges({...deliveryCharges, chennaiSea: e.target.value})} 
-                  style={inputStyle}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold', textAlign: 'left', paddingLeft: '8px' }}>TIRUPUR TO CHENNAI - AIR</td>
-              <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>1000</td>
-              <td style={{ border: '1px solid #000', padding: '0', fontWeight: 'bold' }}>
-                <input 
-                  type="text" 
-                  value={deliveryCharges.chennaiAir} 
-                  onChange={(e) => setDeliveryCharges({...deliveryCharges, chennaiAir: e.target.value})} 
-                  style={inputStyle}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold', textAlign: 'left', paddingLeft: '8px' }}>TIRUPUR TO BANGALORE - AIR</td>
-              <td style={{ border: '1px solid #000', padding: '4px', fontWeight: 'bold' }}>1000</td>
-              <td style={{ border: '1px solid #000', padding: '0', fontWeight: 'bold' }}>
-                <input 
-                  type="text" 
-                  value={deliveryCharges.bangaloreAir} 
-                  onChange={(e) => setDeliveryCharges({...deliveryCharges, bangaloreAir: e.target.value})} 
-                  style={inputStyle}
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        {/* Footer Notes */}
-        <div style={{ fontSize: '13px', lineHeight: '1.4' }}>
-          <p style={{ fontWeight: 'bold', margin: '4px 0' }}>
-            Urgent Load Consider as a Full Load Only Timing Load
-          </p>
-          <p style={{ fontWeight: 'bold', margin: '4px 0' }}>
-            This Price Is Valid for Present Fuel Price; Festival & Lockdown time Extra Charges.
-          </p>
-        </div>
-            </div>
-          </div>
-        </div>
-      </div>
           
           {/* Download/Save Buttons Container */}
           <div className="quotation-actions-row" style={{ display: 'flex', gap: '15px', marginTop: '20px', marginBottom: '40px' }}>
-        <button 
-          onClick={handleSaveQuotation}
-          className="btn-outline"
-          style={{ 
-            padding: '12px 24px', 
-            borderRadius: '6px', 
-            cursor: 'pointer',
-            fontSize: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontWeight: 'bold'
-          }}
-        >
-          <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>✓</span>
-          Save Quotation
-        </button>
-        <button 
-          onClick={() => handleDownloadPDF('quotation-content', 'LT_Rate_Quotation.pdf')} 
-          className="btn-primary"
-          style={{ 
-            padding: '12px 24px', 
-            borderRadius: '6px', 
-            cursor: 'pointer',
-            fontSize: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontWeight: 'bold'
-          }}
-        >
-          <Download size={20} />
-          Download PDF
-        </button>
-      </div>
+            <button 
+              onClick={handleSaveQuotation}
+              className="btn-outline"
+              style={{ 
+                padding: '12px 24px', 
+                borderRadius: '6px', 
+                cursor: 'pointer',
+                fontSize: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontWeight: 'bold'
+              }}
+            >
+              <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>✓</span>
+              Save Quotation
+            </button>
+            <button 
+              onClick={() => handleDownloadPDF('quotation-content', 'LT_Rate_Quotation.pdf')} 
+              className="btn-primary"
+              style={{ 
+                padding: '12px 24px', 
+                borderRadius: '6px', 
+                cursor: 'pointer',
+                fontSize: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontWeight: 'bold'
+              }}
+            >
+              <Download size={20} />
+              Download PDF
+            </button>
+          </div>
         </>
       ) : (
         <>
@@ -839,7 +846,7 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
           <div className="quotation-preview-container" ref={quotationContainerRef} style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
             <div style={{
               width: `${800 * quotationScale}px`,
-              height: `${cardHeight * quotationScale}px`,
+              height: `${1120 * quotationScale}px`,
               position: 'relative',
               margin: '0 auto'
             }}>
@@ -850,158 +857,175 @@ const Quotation = ({ type = 'export', loadedData = null, triggerToast = null }) 
                 top: 0,
                 left: 0,
                 width: '800px',
-                height: `${cardHeight}px`
+                height: '1120px'
               }}>
-                <div id="domestic-quotation-content" ref={quotationCardRef} style={{ backgroundColor: '#fff', color: '#000', padding: '25px 35px', fontFamily: '"Times New Roman", Times, serif', width: '800px', border: '1px solid #ccc', boxShadow: '0 0 10px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
-            
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #000', paddingBottom: '12px' }}>
-              <div style={{ position: 'relative', display: 'inline-block', marginRight: '20px' }}>
-                <div style={{ padding: '0', width: '90px', height: '90px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                  <img src="/logo.png" alt="LT Logo" style={{ width: '85px', height: '85px', objectFit: 'contain' }} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
-                  <span style={{ display: 'none', fontWeight: 'bold', textAlign: 'center', fontSize: '16px' }}>Logo<br/>LT</span>
-                </div>
-              </div>
-              <div>
-                <h1 style={{ fontSize: '22px', fontWeight: 'bold', margin: '0 0 4px 0', textTransform: 'uppercase' }}>LITHIN TRANSPORT</h1>
-                <h2 style={{ fontSize: '13px', fontWeight: 'bold', textDecoration: 'underline', margin: '0 0 6px 0' }}>EXPERT IN DOMESTIC CARGO MOVERS</h2>
-                <p style={{ margin: '0 0 3px 0', fontSize: '13px' }}><strong>Address:</strong> 4/252, Vedivattam, Agraharam vill and po, Natrampalli TK, Tirupattur DT. 635651</p>
-                <p style={{ margin: '0 0 3px 0', fontSize: '13px' }}><strong>Contact:</strong> +91 95667 38884, +91 93423 17996</p>
-                <p style={{ margin: '0 0 3px 0', fontSize: '13px' }}><strong>www:</strong> www.lithintransport.in</p>
-                <p style={{ margin: '0', fontSize: '13px' }}><strong>mail:</strong> lithintransports@gmail.com</p>
-              </div>
-            </div>
-
-            {/* Address & Date Flex Container */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-              {/* Address */}
-              <div style={{ textAlign: 'left', fontSize: '13px' }}>
-                <p style={{ fontWeight: 'bold', margin: '0 0 4px 0', fontSize: '15px', textAlign: 'left' }}>To,</p>
-                <AutocompleteInlineTextarea
-                  value={toAddress}
-                  onChange={(e) => setToAddress(e.target.value)}
-                  placeholder="Enter Your Address"
-                  rows={3}
-                  suggestions={suggestionsRegistry.toAddresses}
-                  style={{
-                    width: '320px',
-                    border: '1px dashed #ccc',
-                    background: 'transparent',
-                    textAlign: 'left',
-                    fontWeight: 'bold',
-                    fontSize: '13px',
-                    outline: 'none',
-                    fontFamily: '"Times New Roman", Times, serif',
-                    resize: 'none',
-                    padding: '4px'
-                  }}
-                  className="pdf-textarea"
-                />
-              </div>
-              {/* Date Picker */}
-              <div style={{ textAlign: 'right', fontSize: '13px', paddingRight: '15px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
-                <label style={{ fontWeight: 'bold', fontSize: '15px' }}>Date:</label>
-                <span className="pdf-date-text" style={{ display: 'none', fontSize: '13px', fontWeight: 'bold' }}>
-                  {formatDate(quotationDate)}
-                </span>
-                <div className="pdf-date-input" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-                  <input
-                    type="date"
-                    value={quotationDate}
-                    onChange={(e) => setQuotationDate(e.target.value)}
-                    onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (err) {} }}
+                <div id="domestic-quotation-content" ref={quotationCardRef} style={{ backgroundColor: '#ffffff', color: '#000000', fontFamily: '"Times New Roman", Times, serif', width: '800px', height: '1120px', position: 'relative', boxShadow: '0 0 10px rgba(0,0,0,0.1)', boxSizing: 'border-box', overflow: 'hidden' }}>
+                  {/* Background Letterhead Image */}
+                  <img
+                    src="/quotation_letterhead.png"
+                    alt="Letterhead Background"
                     style={{
-                      border: '1px dashed #ccc',
-                      background: 'transparent',
-                      outline: 'none',
-                      fontFamily: '"Times New Roman", Times, serif',
-                      fontSize: '13px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      padding: '4px 22px 4px 4px',
-                      width: '130px'
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '800px',
+                      height: '1120px',
+                      objectFit: 'fill',
+                      zIndex: 0,
+                      pointerEvents: 'none'
                     }}
                   />
-                  <Calendar size={14} style={{ position: 'absolute', right: '4px', pointerEvents: 'none', color: '#000000' }} />
+
+                  {/* Foreground Content Container */}
+                  <div style={{
+                    position: 'relative',
+                    zIndex: 1,
+                    padding: '170px 45px 105px 45px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justify: 'space-between',
+                    height: '1120px',
+                    boxSizing: 'border-box'
+                  }}>
+                    <div>
+                      {/* Title */}
+                      <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+                        <h2 style={{ fontSize: '17px', fontWeight: 'bold', textDecoration: 'underline', margin: '0', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                          DOMESTIC RATE QUOTATION
+                        </h2>
+                      </div>
+
+                      {/* Address & Date Flex Container */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '18px' }}>
+                        {/* Address */}
+                        <div style={{ textAlign: 'left', fontSize: '13px' }}>
+                          <p style={{ fontWeight: 'bold', margin: '0 0 4px 0', fontSize: '15px', textAlign: 'left' }}>To,</p>
+                          <AutocompleteInlineTextarea
+                            value={toAddress}
+                            onChange={(e) => setToAddress(e.target.value)}
+                            placeholder="Enter Your Address"
+                            rows={3}
+                            suggestions={suggestionsRegistry.toAddresses}
+                            style={{
+                              width: '320px',
+                              border: '1px dashed #999',
+                              background: 'rgba(255,255,255,0.75)',
+                              textAlign: 'left',
+                              fontWeight: 'bold',
+                              fontSize: '13px',
+                              outline: 'none',
+                              fontFamily: '"Times New Roman", Times, serif',
+                              resize: 'none',
+                              padding: '4px'
+                            }}
+                            className="pdf-textarea"
+                          />
+                        </div>
+                        {/* Date Picker */}
+                        <div style={{ textAlign: 'right', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px' }}>
+                          <label style={{ fontWeight: 'bold', fontSize: '15px' }}>Date:</label>
+                          <span className="pdf-date-text" style={{ display: 'none', fontSize: '13px', fontWeight: 'bold' }}>
+                            {formatDate(quotationDate)}
+                          </span>
+                          <div className="pdf-date-input" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+                            <input
+                              type="date"
+                              value={quotationDate}
+                              onChange={(e) => setQuotationDate(e.target.value)}
+                              onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (err) {} }}
+                              style={{
+                                border: '1px dashed #999',
+                                background: 'rgba(255,255,255,0.75)',
+                                outline: 'none',
+                                fontFamily: '"Times New Roman", Times, serif',
+                                fontSize: '13px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                padding: '4px 22px 4px 4px',
+                                width: '130px'
+                              }}
+                            />
+                            <Calendar size={14} style={{ position: 'absolute', right: '4px', pointerEvents: 'none', color: '#000000' }} />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Location Selectors */}
+                      <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '22px', fontSize: '16px', fontWeight: 'bold' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span>From</span>
+                          <AutocompleteInlineInput 
+                            value={domesticLocation.from} 
+                            onChange={(e) => setDomesticLocation({...domesticLocation, from: e.target.value})}
+                            suggestions={suggestionsRegistry.cities}
+                            style={{ border: '1px solid #000', padding: '4px 10px', outline: 'none', width: '180px', fontFamily: '"Times New Roman", Times, serif', fontSize: '16px', fontWeight: 'bold', backgroundColor: 'rgba(255,255,255,0.9)' }} 
+                          />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span>To</span>
+                          <AutocompleteInlineInput 
+                            value={domesticLocation.to} 
+                            onChange={(e) => setDomesticLocation({...domesticLocation, to: e.target.value})}
+                            suggestions={suggestionsRegistry.cities}
+                            style={{ border: '1px solid #000', padding: '4px 10px', outline: 'none', width: '180px', fontFamily: '"Times New Roman", Times, serif', fontSize: '16px', fontWeight: 'bold', backgroundColor: 'rgba(255,255,255,0.9)' }} 
+                          />
+                        </div>
+                      </div>
+
+                      {/* Domestic Rates Table */}
+                      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px', textAlign: 'center', fontSize: '14px', backgroundColor: 'rgba(255,255,255,0.95)' }}>
+                        <thead>
+                          <tr style={{ backgroundColor: '#B0C4DE' }}>
+                            <th style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold', fontSize: '14px' }}>Container Size</th>
+                            <th style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold', fontSize: '14px' }}>Weight</th>
+                            <th style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold', fontSize: '14px' }}>Rates</th>
+                            <th style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold', fontSize: '14px' }}>Halting Charge</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {[
+                            { size: '20 FT', weight: '6 mt', rates: '35,000', halting: '1500' },
+                            { size: '22 FT', weight: '6 mt', rates: '36,000', halting: '1500' },
+                            { size: '24 FT', weight: '7 mt', rates: '40,000', halting: '2000' },
+                            { size: '32 FT SXL', weight: '7 mt', rates: '48,000', halting: '2000' },
+                            { size: '32 FT SXL', weight: '9 mt', rates: '52,000', halting: '2000' },
+                            { size: '32 FT MXL', weight: '15 mt', rates: '57,000', halting: '2500' },
+                            { size: '32 FT MXL', weight: '18 mt', rates: '62,000', halting: '2500' }
+                          ].map((row, idx) => (
+                            <tr key={idx}>
+                              <td style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold', textAlign: 'left', paddingLeft: '15px' }}>{row.size}</td>
+                              <td style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold' }}>{row.weight}</td>
+                              <td style={{ border: '1px solid #000', padding: '0', fontWeight: 'bold' }}>
+                                <input 
+                                  type="text" 
+                                  value={domesticRates[idx]} 
+                                  onChange={(e) => handleDomesticRateChange(idx, e.target.value)} 
+                                  style={{ ...inputStyle, padding: '8px 0', fontSize: '14px' }}
+                                  placeholder={row.rates}
+                                />
+                              </td>
+                              <td style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold' }}>{row.halting}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Bottom Notes */}
+                    <div style={{ fontSize: '13px', lineHeight: '1.5' }}>
+                      <p style={{ fontWeight: 'bold', margin: '4px 0', fontSize: '14px', textDecoration: 'underline' }}>
+                        As per details in Export Quotation
+                      </p>
+                      <p style={{ fontWeight: 'bold', margin: '3px 0' }}>
+                        Urgent Load Consider as a Full Load Only Timing Load
+                      </p>
+                      <p style={{ fontWeight: 'bold', margin: '3px 0' }}>
+                        This Price Is Valid for Present Fuel Price; Festival & Lockdown time Extra Charges.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            
-            <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '20px', fontSize: '16px', fontWeight: 'bold' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span>From</span>
-                <AutocompleteInlineInput 
-                  value={domesticLocation.from} 
-                  onChange={(e) => setDomesticLocation({...domesticLocation, from: e.target.value})}
-                  suggestions={suggestionsRegistry.cities}
-                  style={{ border: '1px solid #000', padding: '4px 10px', outline: 'none', width: '180px', fontFamily: '"Times New Roman", Times, serif', fontSize: '16px', fontWeight: 'bold' }} 
-                />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span>To</span>
-                <AutocompleteInlineInput 
-                  value={domesticLocation.to} 
-                  onChange={(e) => setDomesticLocation({...domesticLocation, to: e.target.value})}
-                  suggestions={suggestionsRegistry.cities}
-                  style={{ border: '1px solid #000', padding: '4px 10px', outline: 'none', width: '180px', fontFamily: '"Times New Roman", Times, serif', fontSize: '16px', fontWeight: 'bold' }} 
-                />
-              </div>
-            </div>
-
-            
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '15px', textAlign: 'center', fontSize: '14px' }}>
-              <thead>
-                <tr>
-                  <th style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold', fontSize: '14px' }}>Container Size</th>
-                  <th style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold', fontSize: '14px' }}>Weight</th>
-                  <th style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold', fontSize: '14px' }}>Rates</th>
-                  <th style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold', fontSize: '14px' }}>Halting Charge</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { size: '20 FT', weight: '6 mt', rates: '35,000', halting: '1500' },
-                  { size: '22 FT', weight: '6 mt', rates: '36,000', halting: '1500' },
-                  { size: '24 FT', weight: '7 mt', rates: '40,000', halting: '2000' },
-                  { size: '32 FT SXL', weight: '7 mt', rates: '48,000', halting: '2000' },
-                  { size: '32 FT SXL', weight: '9 mt', rates: '52,000', halting: '2000' },
-                  { size: '32 FT MXL', weight: '15 mt', rates: '57,000', halting: '2500' },
-                  { size: '32 FT MXL', weight: '18 mt', rates: '62,000', halting: '2500' }
-                ].map((row, idx) => (
-                  <tr key={idx}>
-                    <td style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold', textAlign: 'left', paddingLeft: '15px' }}>{row.size}</td>
-                    <td style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold' }}>{row.weight}</td>
-                    <td style={{ border: '1px solid #000', padding: '0', fontWeight: 'bold' }}>
-                      <input 
-                        type="text" 
-                        value={domesticRates[idx]} 
-                        onChange={(e) => handleDomesticRateChange(idx, e.target.value)} 
-                        style={{ ...inputStyle, padding: '8px 0', fontSize: '14px' }}
-                        placeholder={row.rates}
-                      />
-                    </td>
-                    <td style={{ border: '1px solid #000', padding: '8px 10px', fontWeight: 'bold' }}>{row.halting}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Footer Notes */}
-            <div style={{ fontSize: '13px', lineHeight: '1.5', marginTop: '15px' }}>
-              <p style={{ fontWeight: 'bold', margin: '4px 0', fontSize: '14px', textDecoration: 'underline' }}>
-                As per detailes in Export Quotation
-              </p>
-              <p style={{ fontWeight: 'bold', margin: '4px 0', fontSize: '13px' }}>
-                Urgent Load Consider as a Full Load Only Timing Load
-              </p>
-              <p style={{ fontWeight: 'bold', margin: '4px 0', fontSize: '13px' }}>
-                This Price Is Valid for Present Fuel Price; Festival & Lockdown time Extra Charges.
-              </p>
-            </div>
-          </div>
-          
-          </div>
             </div>
           </div>
           
